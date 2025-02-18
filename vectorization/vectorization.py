@@ -5,7 +5,8 @@ from dto.rect import Rect
 import drawsvg as draw
 from tqdm import tqdm
 
-from config import MIN_THICKNESS, MAX_PERCENTILE, MAX_VALUE, PNG_PATH, MAX_DEVIATION
+from config import MIN_THICKNESS, MAX_PERCENTILE, MAX_VALUE, MAX_DEVIATION, CLEAN_PNG_PATH
+from utils import get_full_path
 from vectorization.dto.point import Point
 
 
@@ -145,9 +146,8 @@ def find_rects(points: [Point], prepared_image):
 
 
 def main(final_svg_path: str):
-    image = cv2.imread(PNG_PATH)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    corners = cv2.goodFeaturesToTrack(gray, maxCorners=1000, qualityLevel=0.1, minDistance=3)
+    image = cv2.imread(get_full_path(CLEAN_PNG_PATH))
+    corners = cv2.goodFeaturesToTrack(image, maxCorners=1000, qualityLevel=0.1, minDistance=3)
 
     points = []
     for corner in corners:

@@ -1,5 +1,9 @@
+PNG_PATH = "test.png"
+
+CLEAN_PNG_PATH = "clean_test.png"
+BLACK_COLOR_BORDER = 10
+
 MAX_PERCENTILE = 0.15
 MAX_VALUE = 2000
 MIN_THICKNESS = 3
 MAX_DEVIATION = 2
-PNG_PATH = "test.png"

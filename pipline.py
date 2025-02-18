@@ -1,6 +1,7 @@
 import argparse
 import generator.generator as generator
 import vectorization.vectorization as vectorization
+import preprocessor.preprocessor as preprocessor
 
 
 def main():
@@ -19,6 +20,9 @@ def main():
 
     print("Generating plan")
     generator.main(args.__dict__["text"])
+
+    print("Preprocessing image")
+    preprocessor.main()
 
     print("Plan vectorization")
     vectorization.main(args.__dict__["output_svg"])

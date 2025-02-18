@@ -1,13 +1,12 @@
 import cv2
 import numpy as np
-
-from dto.rect import Rect
 import drawsvg as draw
 from tqdm import tqdm
 
 from config import MIN_THICKNESS, MAX_PERCENTILE, MAX_VALUE, MAX_DEVIATION, CLEAN_PNG_PATH
 from utils import get_full_path
 from vectorization.dto.point import Point
+from vectorization.dto.rect import Rect
 
 
 def reorder_points(point1: Point, point2: Point) -> (Point, Point):
@@ -147,7 +146,7 @@ def find_rects(points: [Point], prepared_image):
 
 def main(final_svg_path: str):
     image = cv2.imread(get_full_path(CLEAN_PNG_PATH))
-    corners = cv2.goodFeaturesToTrack(image, maxCorners=1000, qualityLevel=0.1, minDistance=3)
+    corners = cv2.goodFeaturesToTrack(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), maxCorners=1000, qualityLevel=0.1, minDistance=3)
 
     points = []
     for corner in corners:
@@ -164,7 +163,7 @@ def main(final_svg_path: str):
     pic = draw.Drawing(len(image[0]), len(image))
     for rect in rects:
         pic.append(rect.to_rect())
-    pic.save_svg(final_svg_path)
+    pic.save_svg(get_full_path(final_svg_path))
 
 
 if __name__ == "__main__":

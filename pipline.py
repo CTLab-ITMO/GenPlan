@@ -14,7 +14,7 @@ def main():
     parser.add_argument("--output_svg",
                         help="Svg path to vector plan. If it doesn't exits, it will create.",
                         type=str,
-                        default="gen_plan.svg"
+                        default="plan.svg"
                         )
     args = parser.parse_args()
 

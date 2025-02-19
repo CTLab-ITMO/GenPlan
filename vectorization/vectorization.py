@@ -4,6 +4,7 @@ import drawsvg as draw
 from tqdm import tqdm
 
 from config import MIN_THICKNESS, MAX_PERCENTILE, MAX_VALUE, MAX_DEVIATION, CLEAN_PNG_PATH
+from optimizer.optimizer import merge_similar_rects
 from utils import get_full_path
 from vectorization.dto.point import Point
 from vectorization.dto.rect import Rect
@@ -161,6 +162,7 @@ def main(final_svg_path: str):
     rects, new_points = find_rects(new_points, prepared_image)
 
     pic = draw.Drawing(len(image[0]), len(image))
+    rects = merge_similar_rects(rects)
     for rect in rects:
         pic.append(rect.to_rect())
     pic.save_svg(get_full_path(final_svg_path))

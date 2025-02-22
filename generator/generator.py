@@ -1,23 +1,48 @@
-from clarifai.client.model import Model
+import torch
+from diffusers import FluxPipeline, AuraFlowPipeline
+from torch.utils.hipify.hipify_python import InputError
 
 from config import PNG_PATH
+from generator.type import Type
 from utils import get_full_path
 
 
-def main(prompt: str):
-    inference_params = dict(quality="standard", size='512x512')
+def main(prompt: str, model_type: str):
+    if model_type == Type.FLUX.value:
+        pipeline = FluxPipeline.from_pretrained(
+            "black-forest-labs/FLUX.1-schnell",
+            torch_dtype=torch.bfloat16
+        )
+        pipeline.enable_model_cpu_offload()  # save some VRAM by offloading the model to CPU. Remove this if you have enough GPU power
 
-    model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(
-        input_bytes=prompt.encode(),
-        input_type="text",
-        inference_params=inference_params,
-    )
+        image = pipeline(
+            prompt,
+            height=512,
+            width=512,
+            guidance_scale=0.0,
+            num_inference_steps=4,
+            max_sequence_length=256,
+            generator=torch.Generator("cpu").manual_seed(0)
+        ).images[0]
+    elif model_type == Type.AURA_FLOW.value:
+        pipeline = AuraFlowPipeline.from_pretrained(
+            "fal/AuraFlow",
+            torch_dtype=torch.float16
+        ).to("cuda")
 
-    output_base64 = model_prediction.outputs[0].data.image.base64
+        image = pipeline(
+            prompt=prompt,
+            height=512,
+            width=512,
+            num_inference_steps=50,
+            generator=torch.Generator().manual_seed(666),
+            guidance_scale=3.5,
+        ).images[0]
+    else:
+        raise InputError('Unknown type of model.')
 
-    with open(get_full_path(PNG_PATH), 'wb') as f:
-        f.write(output_base64)
+    image.save(get_full_path(PNG_PATH))
 
 
 if __name__ == "__main__":
-    main("plan")
+    main("plan", Type.FLUX.value)

@@ -16,10 +16,15 @@ def main():
                         type=str,
                         default="plan.svg"
                         )
+    parser.add_argument("--generation_model",
+                        help="Name of generation model. Flux by deafault.",
+                        type=str,
+                        default=generator.Type.FLUX.value
+                        )
     args = parser.parse_args()
 
     print("Generating plan")
-    generator.main(args.__dict__["text"])
+    generator.main(args.__dict__["text"], args.__dict__["generation_model"])
 
     print("Preprocessing image")
     preprocessor.main()

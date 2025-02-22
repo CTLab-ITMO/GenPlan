@@ -9,7 +9,7 @@ def main():
     image = cv2.imread(get_full_path(PNG_PATH))
 
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    (w, h) = len(gray_image[0]), len(gray_image)
+    (w, h) = len(gray_image), len(gray_image[0])
 
     new_image = np.zeros((w, h))
 

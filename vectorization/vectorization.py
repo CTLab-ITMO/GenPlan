@@ -159,6 +159,7 @@ def main(final_svg_path: str):
     prepared_image = prepare_image(image)
     _, new_points = find_rects(points, prepared_image)
     _, new_points = find_rects(new_points, prepared_image)
+    _, new_points = find_rects(new_points, prepared_image)
     rects, new_points = find_rects(new_points, prepared_image)
 
     pic = draw.Drawing(len(image[0]), len(image))

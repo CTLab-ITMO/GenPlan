@@ -4,7 +4,7 @@ import drawsvg as draw
 from tqdm import tqdm
 
 from config import MIN_THICKNESS, MAX_PERCENTILE, MAX_VALUE, MAX_DEVIATION, CLEAN_PNG_PATH
-from decorator.decoration import create_windows
+from decorator.decoration import create_windows_and_doors
 from optimizer.optimizer import merge_similar_rects
 from utils import get_full_path
 from vectorization.dto.point import Point
@@ -148,7 +148,10 @@ def find_rects(points: [Point], prepared_image):
 
 def main(final_svg_path: str):
     image = cv2.imread(get_full_path(CLEAN_PNG_PATH))
+    width = len(image[0])
+    height = len(image)
     corners = cv2.goodFeaturesToTrack(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), maxCorners=1000, qualityLevel=0.1, minDistance=3)
+    assert corners is not None, "Generated image is bad, please, change promt"
 
     points = []
     for corner in corners:
@@ -163,13 +166,13 @@ def main(final_svg_path: str):
     _, new_points = find_rects(new_points, prepared_image)
     rects, new_points = find_rects(new_points, prepared_image)
 
-    pic = draw.Drawing(len(image[0]), len(image))
+    pic = draw.Drawing(width, height)
     rects = merge_similar_rects(merge_similar_rects(rects))
-    windows = create_windows(rects)
+    doors_and_windows = create_windows_and_doors(rects, width, height)
     for rect in rects:
-        pic.append(rect.to_rect())
-    for window in windows:
-        pic.append(window.to_rect())
+        rect.to_svg(pic)
+    for door_or_window in doors_and_windows:
+        door_or_window.to_svg(pic)
     pic.save_svg(get_full_path(final_svg_path))
 
 

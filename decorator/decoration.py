@@ -1,7 +1,7 @@
-from vectorization.dto.door import Door
-from vectorization.dto.door_position_type import PositionType
-from vectorization.dto.point import Point
-from vectorization.dto.rect import Rect
+from dto.door import Door
+from dto.door_position_type import PositionType
+from dto.point import Point
+from dto.rect import Rect
 
 
 def find_openings(walls: [Rect]) -> [Rect]:

@@ -1,4 +1,4 @@
-from vectorization.dto.rect import Rect
+from dto.rect import Rect
 
 
 class BaseOptimization:

@@ -1,5 +1,5 @@
 from utils import to_hex
-from vectorization.dto.point import Point
+from dto.point import Point
 import drawsvg as draw
 
 

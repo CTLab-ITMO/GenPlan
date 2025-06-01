@@ -1,6 +1,6 @@
 from optimizer.dto.base_optimization import BaseOptimization
-from vectorization.dto.point import Point
-from vectorization.dto.rect import Rect
+from dto.point import Point
+from dto.rect import Rect
 
 
 class MergeOptimization(BaseOptimization):

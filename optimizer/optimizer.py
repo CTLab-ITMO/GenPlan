@@ -2,7 +2,7 @@ import numpy as np
 
 from optimizer.dto.merge_optimization import MergeOptimization
 from optimizer.dto.takeover_optimization import TakeoverOptimization
-from vectorization.dto.rect import Rect
+from dto.rect import Rect
 
 
 def merge_similar_rects(rects: [Rect]) -> [Rect]:

@@ -1,9 +1,9 @@
 from config import DOOR_WIDTH
-from vectorization.dto.door_position_type import PositionType
-from vectorization.dto.point import Point
+from dto.door_position_type import PositionType
+from dto.point import Point
 import drawsvg as draw
 
-from vectorization.dto.rect import Rect
+from dto.rect import Rect
 
 
 class Door(Rect):

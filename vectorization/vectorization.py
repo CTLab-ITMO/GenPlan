@@ -3,12 +3,12 @@ import numpy as np
 import drawsvg as draw
 from tqdm import tqdm
 
-from config import MIN_THICKNESS, MAX_PERCENTILE, MAX_VALUE, MAX_DEVIATION, CLEAN_PNG_PATH
+from config import MIN_THICKNESS, MAX_PERCENTILE, MAX_VALUE, MAX_DEVIATION, CLEAN_PNG_PATH, SVG_PATH
 from decorator.decoration import create_windows_and_doors
 from optimizer.optimizer import merge_similar_rects
 from utils import get_full_path
-from vectorization.dto.point import Point
-from vectorization.dto.rect import Rect
+from dto.point import Point
+from dto.rect import Rect
 
 
 def reorder_points(point1: Point, point2: Point) -> (Point, Point):
@@ -51,19 +51,19 @@ def calculate_fitness(start_point: Point, end_point: Point, prepared_image: np.a
             prepared_image[end_point.y][start_point.x - 1] + prepared_image[start_point.y - 1][start_point.x - 1]
 
 
-def is_available_rect(point1, point2, prepared_image) -> bool:
+def is_available_rect(point1, point2, prepared_image, min_thickness, max_percentile, max_diff_value) -> bool:
     start_point, end_point = reorder_points(point1, point2)
     width = end_point.x - start_point.x + 1
     height = end_point.y - start_point.y + 1
 
-    max_percentile_value = MAX_PERCENTILE * width * height
+    max_percentile_value = max_percentile * width * height
 
-    if width < MIN_THICKNESS or height < MIN_THICKNESS:
+    if width < min_thickness or height < min_thickness:
         return False
 
     fitness = calculate_fitness(start_point, end_point, prepared_image)
 
-    return fitness <= max_percentile_value and fitness <= MAX_VALUE
+    return fitness <= max_percentile_value and fitness <= max_diff_value
 
 
 def find_similar_points(initial_point: Point, points: [Point]) -> [Point]:
@@ -127,14 +127,14 @@ def average_similar_points_coordinates(points: [Point]):
     return new_points
 
 
-def find_rects(points: [Point], prepared_image):
+def find_rects(points: [Point], prepared_image, min_thickness, max_percentile, max_diff_value ):
     new_points = set()
     rects = []
     for point1 in tqdm(points):
         for point2 in find_similar_points(point1, points):
             new_points.add(point1)
             new_points.add(point2)
-            if is_available_rect(point1, point2, prepared_image):
+            if is_available_rect(point1, point2, prepared_image, min_thickness, max_percentile, max_diff_value):
                 start_point, end_point = reorder_points(point1, point2)
                 rect = Rect(start_point, end_point, [0, 0, 0])
                 if not rects.__contains__(rect):
@@ -145,13 +145,17 @@ def find_rects(points: [Point], prepared_image):
                     new_points.add(Point(rect.end_point.x, rect.end_point.y))
     return rects, new_points
 
-
-def main(final_svg_path: str):
-    image = cv2.imread(get_full_path(CLEAN_PNG_PATH))
+def main(initial_png_path=CLEAN_PNG_PATH,
+         final_svg_path=SVG_PATH,
+         min_thickness=MIN_THICKNESS,
+         max_percentile = MAX_PERCENTILE,
+         max_diff_value = MAX_VALUE):
+    image = cv2.imread(get_full_path(initial_png_path))
     width = len(image[0])
     height = len(image)
-    corners = cv2.goodFeaturesToTrack(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), maxCorners=1000, qualityLevel=0.1, minDistance=3)
-    assert corners is not None, "Generated image is bad, please, change promt"
+    corners = cv2.goodFeaturesToTrack(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), maxCorners=1000, qualityLevel=0.1,
+                                      minDistance=3)
+    assert corners is not None, "Generated image is bad, please, change text prompt"
 
     points = []
     for corner in corners:
@@ -161,10 +165,10 @@ def main(final_svg_path: str):
     points = average_similar_points_coordinates(points)
 
     prepared_image = prepare_image(image)
-    _, new_points = find_rects(points, prepared_image)
-    _, new_points = find_rects(new_points, prepared_image)
-    _, new_points = find_rects(new_points, prepared_image)
-    rects, new_points = find_rects(new_points, prepared_image)
+    _, new_points = find_rects(points, prepared_image, min_thickness, max_percentile, max_diff_value)
+    _, new_points = find_rects(new_points, prepared_image, min_thickness, max_percentile, max_diff_value)
+    _, new_points = find_rects(new_points, prepared_image, min_thickness, max_percentile, max_diff_value)
+    rects, new_points = find_rects(new_points, prepared_image, min_thickness, max_percentile, max_diff_value)
 
     pic = draw.Drawing(width, height)
     rects = merge_similar_rects(merge_similar_rects(rects))
@@ -177,4 +181,4 @@ def main(final_svg_path: str):
 
 
 if __name__ == "__main__":
-    main(final_svg_path="test.svg")
+    main()

@@ -1,31 +1,35 @@
-# GenPlan: Generator of vector plans
+# GenPlan : Generation Vector Residential Plans Based on the Textual Description
 
-Контакты: [Егор Баженов](tujh.bazhenov.kbn00@mail.ru)
+Contacts: [Egor Bazhenov](tujh.bazhenov.kbn00@mail.ru)
 
-## Примеры работы алгоритма
-| Текстовое описание                                                  | Растровое изображение        | Векторное изображение        |
-|---------------------------------------------------------------------|------------------------------|------------------------------|
-| One-room apartment with a separate kitchen                          | ![](examples/pngs/test1.png) | ![](examples/svgs/test1.svg) |
-| One-bedroom apartment with rooms on different sides of the entrance | ![](examples/pngs/test2.png) | ![](examples/svgs/test2.svg) |
+## Scheme of the method
 
+![](examples/scheme.png) 
 
-Мы представляем алгоритм генерации векторных планов жилых помещений 
-на основе текстого описания.
+We present an algorithm for generating vector residential plans 
+based on a text description.
 
-## Использование
+## Generation example
+| Text prompt                                                                                                                                                                                                                            | Raster Image                            | Vector Image                  |
+|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|-------------------------------|
+| A minimalist 2D floor plan of an empty studio apartment without any text, featuring clean black lines and white spaces, showcasing an open layout with designated areas for living, sleeping, and kitchen.  without words on a picture | ![](examples/pngs/test3.png)            | ![](examples/svgs/test3.svg)  |
+
+## Usage
 
 1. ``git clone https://github.com/CTLab-ITMO/GenPlan``
 2. ``pip install requirements.txt``
 3. ``python pipline.py --text "your text promt" --output_svg "svg_path"``
 
-## Настройка
+## Setting parameters
 
-Можно настроить отдельные параметры [config file](config.py) для вашей задачи 
+Individual settings can be configured by [config file](config.py) for your task. 
 
-| Название параметра | Описание                                                                    | Тип    |
-|--------------------|-----------------------------------------------------------------------------|--------|
-| PNG_PATH           | Пусть до растрового изображения                                             | String |
-| MAX_PERCENTILE     | Максимально допустимое соотношение между верными пикселями для векторизации | Float  |
-| MAX_VALUE          | Максимально допустимое количество неверных пикселей для векторизации        | Int    |
-| MIN_THICKNESS      | Минимальная толщина векторной линии                                         | Int    |
-| MAX_DEVIATION      | Максимальное значение отклонения точек от единой прямой                     | Int    |
+| Parameter name     | Description                                      | Type   |
+|--------------------|--------------------------------------------------|--------|
+| PNG_PATH           | Generated bitmap image path                      | String |
+| CLEAN_PNG_PATH     | Cleaned bitmap image path                        | String |
+| BLACK_COLOR_BORDER | Color filtering maximum value                    | Float  |
+| MAX_PERCENTILE     | Maximum pixel differences percentage             | Float  |
+| MAX_VALUE          | Maximum value of dissimilar pixels               | Int    |
+| MIN_THICKNESS      | Minimum thickness of a vector line               | Int    |
+| MAX_DEVIATION      | Maximum deviation of points from a straight line | Int    |

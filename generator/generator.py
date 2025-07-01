@@ -1,8 +1,9 @@
 import torch
-from diffusers import FluxPipeline, AuraFlowPipeline
+from diffusers import FluxPipeline, AuraFlowPipeline, DiffusionPipeline, LMSDiscreteScheduler, AutoencoderKL
 from torch.utils.hipify.hipify_python import InputError
 
 from config import PNG_PATH
+from generator.sdxl import SDXL
 from generator.type import Type
 from utils import get_full_path
 
@@ -38,6 +39,18 @@ def main(prompt: str, model_type: str):
             generator=torch.Generator().manual_seed(666),
             guidance_scale=3.5,
         ).images[0]
+    elif model_type == Type.SDXL.value:
+        pipe = DiffusionPipeline.from_pretrained(
+            "stabilityai/stable-diffusion-xl-base-1.0",
+            use_safetensors=True, torch_dtype=torch.float16,
+            variant="fp16",
+            scheduler=LMSDiscreteScheduler(beta_start=0.00085, beta_end=0.012, beta_schedule="scaled_linear", num_train_timesteps=1000),
+            vae=AutoencoderKL.from_pretrained('madebyollin/sdxl-vae-fp16-fix').to(torch.float16)
+        ).to("cuda")
+
+        sdxl = SDXL(pipe)
+        image = sdxl.inference(prompt,
+                               generator=torch.Generator("cpu").manual_seed(33))[0]
     else:
         raise InputError('Unknown type of model.')
 

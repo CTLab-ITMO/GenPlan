@@ -9,3 +9,7 @@ MIN_THICKNESS = 3
 MAX_DEVIATION = 2
 
 DOOR_WIDTH = 5
+
+USE_WHITE_LOSS = True
+EDGING_TYPE = "rectangle" #["rectangle", "random_mask"], default - circle mask
+LOSS_SCALE = 200.0

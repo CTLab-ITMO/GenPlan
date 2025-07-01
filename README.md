@@ -9,6 +9,9 @@ Contacts: [Egor Bazhenov](tujh.bazhenov.kbn00@mail.ru)
 We present an algorithm for generating vector residential plans 
 based on a text description.
 
+There is an option to choose a generation model where you can set SDXL to create an image with white loss. 
+Please pay attention - for now only SDXL works with white loss. Try different masks and loss_scale during the generation.
+
 ## Generation example
 | Text prompt                                                                                                                                                                                                                            | Raster Image                            | Vector Image                  |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|-------------------------------|
@@ -24,12 +27,15 @@ based on a text description.
 
 Individual settings can be configured by [config file](config.py) for your task. 
 
-| Parameter name     | Description                                      | Type   |
-|--------------------|--------------------------------------------------|--------|
-| PNG_PATH           | Generated bitmap image path                      | String |
-| CLEAN_PNG_PATH     | Cleaned bitmap image path                        | String |
-| BLACK_COLOR_BORDER | Color filtering maximum value                    | Float  |
-| MAX_PERCENTILE     | Maximum pixel differences percentage             | Float  |
-| MAX_VALUE          | Maximum value of dissimilar pixels               | Int    |
-| MIN_THICKNESS      | Minimum thickness of a vector line               | Int    |
-| MAX_DEVIATION      | Maximum deviation of points from a straight line | Int    |
+| Parameter name     | Description                                         | Type   |
+|--------------------|-----------------------------------------------------|--------|
+| PNG_PATH           | Generated bitmap image path                         | String |
+| CLEAN_PNG_PATH     | Cleaned bitmap image path                           | String |
+| BLACK_COLOR_BORDER | Color filtering maximum value                       | Float  |
+| MAX_PERCENTILE     | Maximum pixel differences percentage                | Float  |
+| MAX_VALUE          | Maximum value of dissimilar pixels                  | Int    |
+| MIN_THICKNESS      | Minimum thickness of a vector line                  | Int    |
+| MAX_DEVIATION      | Maximum deviation of points from a straight line    | Int    |
+| LOSS_SCALE         | Scale for a white loss                              | Float  |
+| EDGING_TYPE        | Mask in which content would be, other space - white | String |
+| USE_WHITE_LOSS     | Whether to use white loss with SDXL or not          | Bool   |

@@ -42,15 +42,15 @@ def main(prompt: str, model_type: str):
     elif model_type == Type.SDXL.value:
         pipe = DiffusionPipeline.from_pretrained(
             "stabilityai/stable-diffusion-xl-base-1.0",
-            use_safetensors=True, torch_dtype=torch.float16,
+            use_safetensors=True,
+            torch_dtype=torch.float16,
             variant="fp16",
             scheduler=LMSDiscreteScheduler(beta_start=0.00085, beta_end=0.012, beta_schedule="scaled_linear", num_train_timesteps=1000),
             vae=AutoencoderKL.from_pretrained('madebyollin/sdxl-vae-fp16-fix').to(torch.float16)
         ).to("cuda")
 
         sdxl = SDXL(pipe)
-        image = sdxl.inference(prompt,
-                               generator=torch.Generator("cpu").manual_seed(33))[0]
+        image = sdxl.inference(prompt, generator=torch.Generator("cpu").manual_seed(33))[0]
     else:
         raise InputError('Unknown type of model.')
 

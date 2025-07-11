@@ -1,4 +1,4 @@
-# GenPlan : Generation Vector Residential Plans Based on the Textual Description
+# GenPlan : Generation Vector Residential Plans Based on the Textual Description [[RU](README_RU.md)/[EN](README.md)]
 
 Contacts: [Egor Bazhenov](mailto:tujh.bazhenov.kbn00@mail.ru)
 

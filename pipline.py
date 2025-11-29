@@ -32,3 +32,6 @@ def main():
     print("Plan vectorization")
     vectorization.main(final_svg_path=args.__dict__["output_svg"])
     pass
+
+if __name__ == "__main__":
+    main()

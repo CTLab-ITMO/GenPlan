@@ -32,11 +32,3 @@ def main():
     print("Plan vectorization")
     vectorization.main(final_svg_path=args.__dict__["output_svg"])
     pass
-
-
-if __name__ == "__main__":
-    # main()
-    for i in [0.05, 0.15, 0.25]:
-        for j in [500, 2000, 5000]:
-            vectorization.main(final_svg_path=f'diff_{i}_{j}.svg', max_diff_value=j, max_percentile=i)
-            print(f'diff_{i}_{j}.svg')

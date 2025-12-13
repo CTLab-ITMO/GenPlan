@@ -1,10 +1,14 @@
 import cv2
 import numpy as np
 import drawsvg as draw
+from torch.utils.hipify.hipify_python import InputError
 from tqdm import tqdm
 
 from config import MIN_THICKNESS, MAX_PERCENTILE, MAX_VALUE, MAX_DEVIATION, CLEAN_PNG_PATH, SVG_PATH
-from decorator.decoration import create_windows_and_doors
+from decorator.decoration import create_windows_and_doors_2d, create_windows_and_doors_3d
+from dto.input_params.resultl_type import Type
+from dto.rect_type import RectType
+from three_dimensional.convertor import create_3d
 from optimizer.optimizer import merge_similar_rects
 from utils import get_full_path
 from dto.point import Point
@@ -127,7 +131,7 @@ def average_similar_points_coordinates(points: [Point]):
     return new_points
 
 
-def find_rects(points: [Point], prepared_image, min_thickness, max_percentile, max_diff_value ):
+def find_rects(points: [Point], prepared_image, min_thickness, max_percentile, max_diff_value):
     new_points = set()
     rects = []
     for point1 in tqdm(points):
@@ -136,7 +140,7 @@ def find_rects(points: [Point], prepared_image, min_thickness, max_percentile, m
             new_points.add(point2)
             if is_available_rect(point1, point2, prepared_image, min_thickness, max_percentile, max_diff_value):
                 start_point, end_point = reorder_points(point1, point2)
-                rect = Rect(start_point, end_point, [0, 0, 0])
+                rect = Rect(start_point, end_point, [0, 0, 0], RectType.WALL)
                 if not rects.__contains__(rect):
                     rects.append(rect)
                     new_points.add(Point(rect.start_point.x, rect.start_point.y))
@@ -145,11 +149,14 @@ def find_rects(points: [Point], prepared_image, min_thickness, max_percentile, m
                     new_points.add(Point(rect.end_point.x, rect.end_point.y))
     return rects, new_points
 
+
 def main(initial_png_path=CLEAN_PNG_PATH,
          final_svg_path=SVG_PATH,
          min_thickness=MIN_THICKNESS,
-         max_percentile = MAX_PERCENTILE,
-         max_diff_value = MAX_VALUE):
+         max_percentile=MAX_PERCENTILE,
+         max_diff_value=MAX_VALUE,
+         result_type=Type.TWO_DIMENSIONAL.value
+         ):
     image = cv2.imread(get_full_path(initial_png_path))
     width = len(image[0])
     height = len(image)
@@ -172,12 +179,19 @@ def main(initial_png_path=CLEAN_PNG_PATH,
 
     pic = draw.Drawing(width, height)
     rects = merge_similar_rects(merge_similar_rects(rects))
-    doors_and_windows = create_windows_and_doors(rects, width, height)
-    for rect in rects:
-        rect.to_svg(pic)
-    for door_or_window in doors_and_windows:
-        door_or_window.to_svg(pic)
-    pic.save_svg(get_full_path(final_svg_path))
+
+    if result_type == Type.TWO_DIMENSIONAL.value:
+        doors_and_windows = create_windows_and_doors_2d(rects, width, height)
+        for rect in rects:
+            rect.to_svg(pic)
+        for door_or_window in doors_and_windows:
+            door_or_window.to_svg(pic)
+        pic.save_svg(get_full_path(final_svg_path))
+    elif result_type == Type.THREE_DIMENSIONAL.value:
+        doors_and_windows = create_windows_and_doors_3d(rects)
+        create_3d(rects + doors_and_windows)
+    else:
+        raise InputError('Unknown result type.')
 
 
 if __name__ == "__main__":

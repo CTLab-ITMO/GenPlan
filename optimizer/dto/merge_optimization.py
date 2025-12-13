@@ -1,3 +1,4 @@
+from dto.rect_type import RectType
 from optimizer.dto.base_optimization import BaseOptimization
 from dto.point import Point
 from dto.rect import Rect
@@ -22,7 +23,8 @@ class MergeOptimization(BaseOptimization):
             return Rect(
                 start_point=Point(x=rect1.start_point.x, y=min_y),
                 end_point=Point(x=rect1.end_point.x, y=max_y),
-                color=[0, 0, 0]
+                color=[0, 0, 0],
+                rect_type=RectType.WALL
             )
         elif is_rects_has_similar_ys:
             min_x = min(rect1.start_point.x, rect2.start_point.x)
@@ -30,7 +32,8 @@ class MergeOptimization(BaseOptimization):
             return Rect(
                 start_point=Point(x=min_x, y=rect1.start_point.y),
                 end_point=Point(x=max_x, y=rect1.end_point.y),
-                color=[0, 0, 0]
+                color=[0, 0, 0],
+                rect_type=RectType.WALL
             )
         else:
             raise ValueError('Can\'t merge any rect.')

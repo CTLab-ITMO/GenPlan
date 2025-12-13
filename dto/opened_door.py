@@ -4,13 +4,14 @@ from dto.point import Point
 import drawsvg as draw
 
 from dto.rect import Rect
+from dto.rect_type import RectType
 
 
-class Door(Rect):
+class OpenedDoor(Rect):
     position_type: PositionType
 
     def __init__(self, start_point: Point, end_point: Point, color: [int], position_type: PositionType):
-        super().__init__(start_point, end_point, color)
+        super().__init__(start_point, end_point, color, RectType.DOOR)
         self.position_type = position_type
 
     def to_svg(self, drawing: draw.Drawing):
@@ -46,4 +47,4 @@ class Door(Rect):
             )
 
     def __str__(self):
-        return f'Door(start = {self.start_point}, end = {self.end_point}, position_type = {self.position_type})'
+        return f'OpenedDoor(start = {self.start_point}, end = {self.end_point}, position_type = {self.position_type})'

@@ -4,7 +4,7 @@ from torch.utils.hipify.hipify_python import InputError
 
 from config import PNG_PATH
 from generator.sdxl import SDXL
-from generator.type import Type
+from dto.input_params.gen_model_type import Type
 from utils import get_full_path
 
 

@@ -1,3 +1,4 @@
+from dto.rect_type import RectType
 from utils import to_hex
 from dto.point import Point
 import drawsvg as draw
@@ -8,23 +9,23 @@ class Rect:
     end_point: Point
     color: [int]
     hex_color: str
+    rect_type: RectType
 
-    def __init__(self, start_point: Point, end_point: Point, color: [int]):
+    def __init__(self, start_point: Point, end_point: Point, color: [int], rect_type: RectType = RectType.UNKNOWN):
         assert start_point.x <= end_point.x and start_point.y <= end_point.y, \
             f'Start point coordinates must be less then end point. Found start_point = {start_point}, end_point = {end_point}'
         self.start_point = start_point
         self.end_point = end_point
         self.color = color
         self.hex_color = f'#{to_hex(color[0])}{to_hex(color[1])}{to_hex(color[2])}'
-
-    def get_color(self, x: int, y: int) -> [int]:
-        if self.start_point.x <= x < self.end_point.x and self.start_point.y <= y < self.end_point.y:
-            return self.color
-        return None
+        self.rect_type = rect_type
 
     def recolor(self, color: [int]):
         self.color = color
         self.hex_color = f'#{to_hex(color[0])}{to_hex(color[1])}{to_hex(color[2])}'
+
+    def set_rect_type(self, rect_type: RectType):
+        self.rect_type = rect_type
 
     def to_svg(self, drawing: draw.Drawing):
         drawing.append(draw.Rectangle(self.start_point.x, self.start_point.y, self.end_point.x - self.start_point.x,

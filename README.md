@@ -18,7 +18,7 @@ based on a text description.
 
 1. ``git clone https://github.com/CTLab-ITMO/GenPlan``
 2. ``pip install requirements.txt``
-3. ``python pipline.py --text "your text promt" --output_svg "svg_path" --generation_model "model_name"``
+3. ``python pipline.py --text "your text promt" --output_svg "svg_path" --generation_model "model_name"  --result_type "2d or 3d"``
 
 ## Setting parameters
 

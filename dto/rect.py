@@ -10,12 +10,16 @@ class Rect:
     color: [int]
     hex_color: str
     rect_type: RectType
+    min_size: int
+    max_size: int
 
     def __init__(self, start_point: Point, end_point: Point, color: [int], rect_type: RectType = RectType.UNKNOWN):
         assert start_point.x <= end_point.x and start_point.y <= end_point.y, \
             f'Start point coordinates must be less then end point. Found start_point = {start_point}, end_point = {end_point}'
         self.start_point = start_point
         self.end_point = end_point
+        self.min_size = min(end_point.x - start_point.x, end_point.y - start_point.y)
+        self.max_size = max(end_point.x - start_point.x, end_point.y - start_point.y)
         self.color = color
         self.hex_color = f'#{to_hex(color[0])}{to_hex(color[1])}{to_hex(color[2])}'
         self.rect_type = rect_type
@@ -40,7 +44,7 @@ class Rect:
                 self.end_point.y > rect.start_point.y and rect.end_point.y > self.start_point.y)
 
     def __str__(self):
-        return f'Rect(start = {self.start_point}, end = {self.end_point})'
+        return f'Rect(start = {self.start_point}, end = {self.end_point}, type = {self.rect_type})'
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Rect):

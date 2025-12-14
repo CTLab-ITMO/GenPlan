@@ -1,5 +1,5 @@
 from config import DOOR_WIDTH
-from dto.door_position_type import PositionType
+from dto.opened_door.door_position_type import PositionType
 from dto.point import Point
 import drawsvg as draw
 

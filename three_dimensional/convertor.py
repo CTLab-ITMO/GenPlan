@@ -4,7 +4,13 @@ import open3d as o3d
 from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH
 from dto.rect import Rect
 from dto.rect_type import RectType
+from dto.wall_size_type import WallSizeType
+from dto.window_size_type import WindowSizeType
 from three_dimensional.visualization import save_as_gif
+
+# default params of door
+DEFAULT_DOOR_HEIGHT = 200.0
+DEFAULT_DOOR_WIDTH = 90.0
 
 
 def combine_mashes(meshes: List[o3d.geometry.TriangleMesh]) -> o3d.geometry.TriangleMesh:
@@ -87,18 +93,34 @@ def create_window_mesh(
     return create_mash_rectangle(rect, bottom=windows_bottom_height, top=windows_top_height, color=color)
 
 
+def calculate_door_height(front_door_rect: Rect) -> int:
+    return int((DEFAULT_DOOR_HEIGHT / DEFAULT_DOOR_WIDTH) * front_door_rect.max_size)
+
+
+def calculate_wall_height(door_height: int, wall_type: WallSizeType) -> int:
+    return int(wall_type.value / DEFAULT_DOOR_HEIGHT * door_height)
+
+
+def calculate_window_height(wall_height: int, window_type: WindowSizeType) -> (int, int):
+    bottom_value, top_value = window_type.value
+    return int(bottom_value * wall_height), int(top_value * wall_height)
+
+
 def create_3d(
+        front_door_rect: Rect,
         rects: List[Rect],
+        wall_type: WallSizeType = WallSizeType.STANDARD,
+        window_type: WindowSizeType = WindowSizeType.STANDARD,
         need_save: bool = True,
         need_show: bool = False
 ):
     meshes = []
-    wall_height = 100
-    door_height = 80
-    windows_bottom_height = 20
-    windows_top_height = 80
 
-    for rect in rects:
+    door_height = calculate_door_height(front_door_rect)
+    wall_height = calculate_wall_height(door_height, wall_type)
+    windows_bottom_height, windows_top_height = calculate_window_height(wall_height, window_type)
+
+    for rect in rects + [front_door_rect]:
         if rect.rect_type == RectType.WALL:
             mesh = create_wall_mesh(rect, wall_height=wall_height, color=WALL_COLOR)
             meshes.append(mesh)

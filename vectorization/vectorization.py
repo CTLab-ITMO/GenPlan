@@ -188,8 +188,11 @@ def main(initial_png_path=CLEAN_PNG_PATH,
             door_or_window.to_svg(pic)
         pic.save_svg(get_full_path(final_svg_path))
     elif result_type == Type.THREE_DIMENSIONAL.value:
-        doors_and_windows = create_windows_and_doors_3d(rects)
-        create_3d(rects + doors_and_windows)
+        front_door_rect, doors_and_windows = create_windows_and_doors_3d(rects)
+        create_3d(
+            front_door_rect=front_door_rect,
+            rects=rects + doors_and_windows
+        )
     else:
         raise InputError('Unknown result type.')
 

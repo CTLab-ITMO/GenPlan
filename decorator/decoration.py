@@ -1,6 +1,6 @@
 from config import DOOR_COLOR, WINDOW_COLOR
-from dto.opened_door import OpenedDoor
-from dto.door_position_type import PositionType
+from dto.opened_door.opened_door import OpenedDoor
+from dto.opened_door.door_position_type import PositionType
 from dto.point import Point
 from dto.rect import Rect
 from dto.rect_type import RectType
@@ -145,9 +145,14 @@ def update_windows(openings: [Rect]) -> [Rect]:
 
 def update_doors(openings: [Rect]) -> [Rect]:
     for opening in openings:
-        opening.rect_type = RectType.DOOR
-        opening.recolor(DOOR_COLOR)
+        update_door(opening)
     return openings
+
+
+def update_door(opening: Rect) -> Rect:
+    opening.rect_type = RectType.DOOR
+    opening.recolor(DOOR_COLOR)
+    return opening
 
 
 def create_windows_and_doors_2d(walls: [Rect], width: int, height: int) -> [Rect]:
@@ -159,10 +164,11 @@ def create_windows_and_doors_2d(walls: [Rect], width: int, height: int) -> [Rect
     return list(doors) + list(windows)
 
 
-def create_windows_and_doors_3d(walls: [Rect]) -> [Rect]:
+# return outsize door and list of other doors and windows
+def create_windows_and_doors_3d(walls: [Rect]) -> (Rect, [Rect]):
     outside_openings, inside_openings = find_inside_and_outside(walls)
     outside_door = find_smallest_opening(outside_openings)
     outside_openings.remove(outside_door)
     windows = update_windows(list(outside_openings))
-    doors = update_doors([outside_door] + list(inside_openings))
-    return doors + windows
+    doors = update_doors(list(inside_openings))
+    return update_door(outside_door), doors + windows

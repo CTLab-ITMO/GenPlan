@@ -10,9 +10,9 @@ We present an algorithm for generating vector residential plans
 based on a text description.
 
 ## Generation example
-| Text prompt                                                                                                                                                                                                                            | Raster Image                            | Vector Image                  |
-|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|-------------------------------|
-| A minimalist 2D floor plan of an empty studio apartment without any text, featuring clean black lines and white spaces, showcasing an open layout with designated areas for living, sleeping, and kitchen.  without words on a picture | ![](examples/pngs/test3.png)            | ![](examples/svgs/test3.svg)  |
+| Text prompt                                                                                                                                                                                                                            | Raster Image                            | Vector Image                 | 3D Image                      |
+|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------|------------------------------|-------------------------------|
+| A minimalist 2D floor plan of an empty studio apartment without any text, featuring clean black lines and white spaces, showcasing an open layout with designated areas for living, sleeping, and kitchen.  without words on a picture | ![](examples/pngs/test3.png)            | ![](examples/svgs/test3.svg) | ![](examples/gifs/test3.gif)  |
 
 ## Usage
 

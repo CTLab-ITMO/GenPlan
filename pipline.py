@@ -38,7 +38,11 @@ def main():
     preprocessor.main()
 
     print("Plan vectorization")
-    vectorization.main(final_svg_path=args.__dict__["output_svg"], result_type=args.__dict__["result_type"])
+    vectorization.main(
+        description=args.__dict__["text"],
+        final_svg_path=args.__dict__["output_svg"],
+        result_type=args.__dict__["result_type"]
+    )
     pass
 
 if __name__ == "__main__":

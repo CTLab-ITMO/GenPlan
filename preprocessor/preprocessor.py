@@ -8,6 +8,9 @@ from utils import get_full_path
 def main(min_black_value=BLACK_COLOR_BORDER, initial_png_path=PNG_PATH, final_png_path=CLEAN_PNG_PATH):
     image = cv2.imread(get_full_path(initial_png_path))
 
+    if image is None:
+        raise ValueError(f'Not image by path {get_full_path(initial_png_path)}')
+
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     (w, h) = len(gray_image), len(gray_image[0])
 

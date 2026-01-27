@@ -150,13 +150,15 @@ def find_rects(points: [Point], prepared_image, min_thickness, max_percentile, m
     return rects, new_points
 
 
-def main(initial_png_path=CLEAN_PNG_PATH,
-         final_svg_path=SVG_PATH,
-         min_thickness=MIN_THICKNESS,
-         max_percentile=MAX_PERCENTILE,
-         max_diff_value=MAX_VALUE,
-         result_type=Type.TWO_DIMENSIONAL.value
-         ):
+def main(
+        description: str="",
+        initial_png_path=CLEAN_PNG_PATH,
+        final_svg_path=SVG_PATH,
+        min_thickness=MIN_THICKNESS,
+        max_percentile=MAX_PERCENTILE,
+        max_diff_value=MAX_VALUE,
+        result_type=Type.TWO_DIMENSIONAL.value
+):
     image = cv2.imread(get_full_path(initial_png_path))
     width = len(image[0])
     height = len(image)
@@ -191,7 +193,8 @@ def main(initial_png_path=CLEAN_PNG_PATH,
         front_door_rect, doors_and_windows = create_windows_and_doors_3d(rects)
         create_3d(
             front_door_rect=front_door_rect,
-            rects=rects + doors_and_windows
+            rects=rects + doors_and_windows,
+            description=description,
         )
     else:
         raise InputError('Unknown result type.')

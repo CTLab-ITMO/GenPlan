@@ -109,12 +109,14 @@ def calculate_window_height(wall_height: int, window_type: WindowSizeType) -> (i
 def create_3d(
         front_door_rect: Rect,
         rects: List[Rect],
-        wall_type: WallSizeType = WallSizeType.STANDARD,
-        window_type: WindowSizeType = WindowSizeType.STANDARD,
+        description: str,
         need_save: bool = True,
         need_show: bool = False
 ):
     meshes = []
+
+    # Todo: Add getting types by description
+    wall_type, window_type = WallSizeType.STANDARD, WindowSizeType.STANDARD
 
     door_height = calculate_door_height(front_door_rect)
     wall_height = calculate_wall_height(door_height, wall_type)
@@ -155,5 +157,7 @@ def create_3d(
     if need_save:
         o3d.io.write_triangle_mesh(OBJ_PATH, combine_mashes(meshes))
         save_as_gif(meshes, gif_file_name=GIF_PATH)
+        print(f'Gif saved in file {GIF_PATH}')
+        print(f'3D obj saved in file {OBJ_PATH}')
     if need_show:
         o3d.visualization.draw_geometries(meshes)

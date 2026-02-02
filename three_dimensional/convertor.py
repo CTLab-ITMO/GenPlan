@@ -1,11 +1,12 @@
 from typing import List
 import open3d as o3d
 
-from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH
+from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH, IFC_PATH
 from dto.rect import Rect
 from dto.rect_type import RectType
 from dto.wall_size_type import WallSizeType
 from dto.window_size_type import WindowSizeType
+from three_dimensional.bim_coverter import meshes_to_bim
 from three_dimensional.visualization import save_as_gif
 
 # default params of door
@@ -155,9 +156,11 @@ def create_3d(
         else:
             raise ValueError(f'Unknown type = {rect.rect_type}')
     if need_save:
+        meshes_to_bim(meshes)
+        print(f'3D BIM model saved in file {IFC_PATH}')
         o3d.io.write_triangle_mesh(OBJ_PATH, combine_mashes(meshes))
+        print(f'3D obj saved in file {OBJ_PATH}')
         save_as_gif(meshes, gif_file_name=GIF_PATH)
         print(f'Gif saved in file {GIF_PATH}')
-        print(f'3D obj saved in file {OBJ_PATH}')
     if need_show:
         o3d.visualization.draw_geometries(meshes)

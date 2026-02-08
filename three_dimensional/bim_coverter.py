@@ -4,7 +4,7 @@ import ifcopenshell.api
 from config import WALL_COLOR, WINDOW_COLOR, DOOR_COLOR, IFC_PATH
 
 
-def add_element(model, body_context, mesh, element):
+def add_element(model, body_context, mesh, element, colors, transparency=0.0):
     element_length = float(abs(mesh.vertices[0][0] - mesh.vertices[2][0]) / 100)
     element_thickness = float(abs(mesh.vertices[0][1] - mesh.vertices[1][1]) / 100)
     element_height = float(abs(mesh.vertices[0][2] - mesh.vertices[4][2]) / 100)
@@ -37,6 +37,30 @@ def add_element(model, body_context, mesh, element):
             [0, 0, 1, z],
             [0, 0, 0, 1]
         ]
+    )
+
+    style = ifcopenshell.api.run(
+        "style.add_style",
+        model,
+        name="Color"
+    )
+
+    ifcopenshell.api.run(
+        "style.add_surface_style",
+        model,
+        style=style,
+        ifc_class="IfcSurfaceStyleShading",
+        attributes={
+            "SurfaceColour": {"Name": None, "Red": colors[0], "Green": colors[1], "Blue": colors[2]},
+            "Transparency": transparency
+        }
+    )
+
+    ifcopenshell.api.run(
+        "style.assign_representation_styles",
+        model,
+        shape_representation=representation,
+        styles=[style]
     )
 
 
@@ -102,6 +126,7 @@ def meshes_to_bim(meshes):
     doors = []
     for mesh in meshes:
         colors = mesh.vertex_colors[0] * 255
+        mesh_colors = mesh.vertex_colors[0]
         if all(colors == WALL_COLOR):
             wall = ifcopenshell.api.run(
                 "root.create_entity",
@@ -111,7 +136,7 @@ def meshes_to_bim(meshes):
                 predefined_type="STRAIGHT"
             )
             walls.append(wall)
-            add_element(model, body_context, mesh, wall)
+            add_element(model, body_context, mesh, wall, mesh_colors)
         elif all(colors == WINDOW_COLOR):
             pass
             window = ifcopenshell.api.run(
@@ -122,7 +147,7 @@ def meshes_to_bim(meshes):
                 predefined_type="WINDOW"
             )
             windows.append(window)
-            add_element(model, body_context, mesh, window)
+            add_element(model, body_context, mesh, window, mesh_colors, transparency=0.5)
         elif all(colors == DOOR_COLOR):
             door = ifcopenshell.api.run(
                 "root.create_entity",
@@ -132,7 +157,7 @@ def meshes_to_bim(meshes):
                 predefined_type="DOOR"
             )
             doors.append(door)
-            add_element(model, body_context, mesh, door)
+            add_element(model, body_context, mesh, door, mesh_colors)
         else:
             raise ValueError(f'Unknown RGB color {colors}')
 

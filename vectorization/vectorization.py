@@ -195,6 +195,8 @@ def main(
             front_door_rect=front_door_rect,
             rects=rects + doors_and_windows,
             description=description,
+            width=width,
+            height=height
         )
     else:
         raise InputError('Unknown result type.')

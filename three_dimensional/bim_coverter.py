@@ -1,7 +1,7 @@
 import ifcopenshell
 import ifcopenshell.api
 
-from config import WALL_COLOR, WINDOW_COLOR, DOOR_COLOR, IFC_PATH
+from config import WALL_COLOR, WINDOW_COLOR, DOOR_COLOR, IFC_PATH, ROOF_COLOR
 
 
 def add_element(model, body_context, mesh, element, colors, transparency=0.0):
@@ -124,6 +124,7 @@ def meshes_to_bim(meshes):
     walls = []
     windows = []
     doors = []
+    roofs = []
     for mesh in meshes:
         colors = mesh.vertex_colors[0] * 255
         mesh_colors = mesh.vertex_colors[0]
@@ -158,6 +159,16 @@ def meshes_to_bim(meshes):
             )
             doors.append(door)
             add_element(model, body_context, mesh, door, mesh_colors)
+        elif all(colors == ROOF_COLOR):
+            roof = ifcopenshell.api.run(
+                "root.create_entity",
+                model,
+                ifc_class="IfcRoof",
+                name="roof",
+                predefined_type="FLAT_ROOF"
+            )
+            roofs.append(roof)
+            add_element(model, body_context, mesh, roof, mesh_colors)
         else:
             raise ValueError(f'Unknown RGB color {colors}')
 
@@ -165,6 +176,6 @@ def meshes_to_bim(meshes):
         "aggregate.assign_object",
         model,
         relating_object=storey,
-        products=walls + windows + doors
+        products=walls + windows + doors + roofs
     )
     model.write(IFC_PATH)

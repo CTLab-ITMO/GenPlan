@@ -1,9 +1,9 @@
 from config import DOOR_COLOR, WINDOW_COLOR
 from dto.opened_door.opened_door import OpenedDoor
-from dto.opened_door.door_position_type import PositionType
+from dto.enum.position_type import PositionType
 from dto.point import Point
 from dto.rect import Rect
-from dto.rect_type import RectType
+from dto.enum.rect_type import RectType
 
 
 def find_openings(walls: [Rect]) -> [Rect]:
@@ -84,7 +84,7 @@ def can_create_door(door: Rect, walls: [Rect]) -> bool:
 
 
 def find_smallest_opening(openings: [Rect]) -> Rect:
-    small_opening: Rect = None
+    small_opening = None
     small_width = float('inf')
     for opening in openings:
         if opening.end_point.x - opening.start_point.x < opening.end_point.y - opening.start_point.y:

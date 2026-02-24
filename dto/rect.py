@@ -1,4 +1,4 @@
-from dto.rect_type import RectType
+from dto.enum.rect_type import RectType
 from utils import to_hex
 from dto.point import Point
 import drawsvg as draw

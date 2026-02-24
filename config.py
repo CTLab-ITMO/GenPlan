@@ -14,11 +14,12 @@ MAX_DEVIATION = 2
 # config for 2d
 DOOR_WIDTH = 5
 
-DEFAULT_COLOR = [0,0,0]
+DEFAULT_COLOR = [0, 0, 0]
 DOOR_COLOR = [150, 80, 50]
 WINDOW_COLOR = [153, 204, 255]
 WALL_COLOR = [128, 128, 128]
+ROOF_COLOR = [69, 21, 13]
 
 USE_WHITE_LOSS = True
-EDGING_TYPE = "rectangle" #["rectangle", "random_mask"]
+EDGING_TYPE = "rectangle"  # ["rectangle", "random_mask"]
 LOSS_SCALE = 200.0

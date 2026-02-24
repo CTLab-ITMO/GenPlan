@@ -1,4 +1,4 @@
-from dto.rect_type import RectType
+from dto.enum.rect_type import RectType
 from optimizer.dto.base_optimization import BaseOptimization
 from dto.point import Point
 from dto.rect import Rect

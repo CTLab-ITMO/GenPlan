@@ -7,7 +7,7 @@ from tqdm import tqdm
 from config import MIN_THICKNESS, MAX_PERCENTILE, MAX_VALUE, MAX_DEVIATION, CLEAN_PNG_PATH, SVG_PATH
 from decorator.decoration import create_windows_and_doors_2d, create_windows_and_doors_3d
 from dto.input_params.resultl_type import Type
-from dto.rect_type import RectType
+from dto.enum.rect_type import RectType
 from three_dimensional.convertor import create_3d
 from optimizer.optimizer import merge_similar_rects
 from utils import get_full_path

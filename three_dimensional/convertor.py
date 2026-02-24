@@ -1,23 +1,29 @@
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 import open3d as o3d
 
 from collections import deque
-from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH, IFC_PATH
+from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH, IFC_PATH, ROOF_COLOR
+from dto.enum.position_type import PositionType
 from dto.point import Point
 from dto.polygon import Polygon
 from dto.rect import Rect
-from dto.rect_type import RectType
-from dto.wall_size_type import WallSizeType
-from dto.window_size_type import WindowSizeType
+from dto.enum.rect_type import RectType
+from dto.enum.wall_size_type import WallSizeType
+from dto.enum.window_size_type import WindowSizeType
+from dto.roof.roof import Roof
 from three_dimensional.bim_coverter import meshes_to_bim
 from three_dimensional.visualization import save_as_gif
 
 # default params of door
 DEFAULT_DOOR_HEIGHT = 200.0
 DEFAULT_DOOR_WIDTH = 90.0
-DEFAULT_THICKNESS = 10
+DEFAULT_WALL_THICKNESS = 10
+DEFAULT_ROOF_THICKNESS = 10
+DEFAULT_ROOF_ANGLE_1 = 15
+DEFAULT_ROOF_ANGLE_2 = 30
+DEFAULT_ROOF_INDENT = 50
 
 
 def find_outside_corner_points(width: int, height: int, rects: List[Rect]) -> List[Point]:
@@ -117,7 +123,35 @@ def create_mash(vertices, triangles, color: List[int]) -> o3d.geometry.TriangleM
     return mesh
 
 
-# color - RGB array [0..255, 0..255, 0..255]
+def create_mash_points(points: List[Tuple[int, int, int]], color: List[int]) -> o3d.geometry.TriangleMesh:
+    vertices = []
+    for (x, y, z) in points:
+        vertices.append([x, y, z])
+
+    triangles = []
+
+    if len(points) == 8:
+        triangles = [
+            [0, 1, 2], [0, 2, 3],
+            [4, 6, 5], [4, 7, 6],
+            [0, 4, 5], [0, 5, 1],
+            [1, 5, 6], [1, 6, 2],
+            [2, 6, 7], [2, 7, 3],
+            [3, 7, 4], [3, 4, 0]
+        ]
+    elif len(points) == 6:
+        triangles = [
+            [0, 1, 2], [3, 5, 4],
+            [0, 3, 1], [1, 3, 4],
+            [1, 4, 2], [2, 4, 5],
+            [2, 5, 0], [0, 5, 3]
+        ]
+
+    if len(triangles) == 0:
+        raise ValueError(f'Unsupported count of points with {len(points)}.')
+    return create_mash(vertices, triangles, color)
+
+
 def create_mash_rectangle(rect: Rect, bottom: int, top: int, color: List[int]) -> o3d.geometry.TriangleMesh:
     vertices = [
         [rect.start_point.x, rect.start_point.y, bottom],
@@ -145,8 +179,8 @@ def create_mash_rectangle(rect: Rect, bottom: int, top: int, color: List[int]) -
 def create_mash_polygon(polygon: Polygon, bottom: int, top: int, color: List[int]) -> o3d.geometry.TriangleMesh:
     vertices = []
     for point in polygon.points:
-        vertices.append([point.x, point.y, bottom])
         vertices.append([point.x, point.y, top])
+        vertices.append([point.x, point.y, bottom])
 
     triangles = []
     if len(polygon.points) < 3:
@@ -226,6 +260,24 @@ def calculate_window_height(wall_height: int, window_type: WindowSizeType) -> (i
     return int(bottom_value * wall_height), int(top_value * wall_height)
 
 
+def create_roof(rect: Rect, height: int, position_type: PositionType, slopes_count: int) -> Roof:
+    angle_degrees = 45
+    if slopes_count == 1:
+        angle_degrees = DEFAULT_ROOF_ANGLE_1
+    elif slopes_count == 2:
+        angle_degrees = DEFAULT_ROOF_ANGLE_2
+    return Roof(
+        rect=rect,
+        roof_thickness=DEFAULT_ROOF_THICKNESS,
+        wall_thickness=DEFAULT_WALL_THICKNESS,
+        angle=angle_degrees,
+        slopes_count=slopes_count,
+        indent=DEFAULT_ROOF_INDENT,
+        height=height + DEFAULT_WALL_THICKNESS,
+        position_type=position_type
+    )
+
+
 def create_3d(
         front_door_rect: Rect,
         rects: List[Rect],
@@ -246,8 +298,20 @@ def create_3d(
 
     outside_corner = find_outside_corner_points(width, height, rects + [front_door_rect])
     outside_polygon = Polygon(points=outside_corner, color=WALL_COLOR)
-    meshes.append(create_floor_mesh(outside_polygon, thickness=DEFAULT_THICKNESS))
-    meshes.append(create_ceiling_mesh(outside_polygon, thickness=DEFAULT_THICKNESS, wall_height=wall_height))
+    meshes.append(create_floor_mesh(outside_polygon, thickness=DEFAULT_WALL_THICKNESS))
+    meshes.append(create_ceiling_mesh(outside_polygon, thickness=DEFAULT_WALL_THICKNESS, wall_height=wall_height))
+
+    # Todo: Add finding of types
+    roof = create_roof(
+        rect=outside_polygon.to_rect(),
+        height=wall_height,
+        position_type=PositionType.LEFT,
+        slopes_count=1
+    )
+    for wall in roof.get_coordinates_of_walls():
+        meshes.append(create_mash_points(wall, WALL_COLOR))
+    for wall in roof.get_coordinates_of_slopes():
+        meshes.append(create_mash_points(wall, ROOF_COLOR))
 
     for rect in rects + [front_door_rect]:
         if rect.rect_type == RectType.WALL:

@@ -1,10 +1,10 @@
 from config import DOOR_WIDTH
-from dto.opened_door.door_position_type import PositionType
+from dto.enum.position_type import PositionType
 from dto.point import Point
 import drawsvg as draw
 
 from dto.rect import Rect
-from dto.rect_type import RectType
+from dto.enum.rect_type import RectType
 
 
 class OpenedDoor(Rect):

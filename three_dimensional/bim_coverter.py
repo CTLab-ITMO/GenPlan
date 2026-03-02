@@ -1,8 +1,13 @@
+from typing import List
+
 import ifcopenshell
 import ifcopenshell.api
 import numpy as np
 
-from config import WALL_COLOR, WINDOW_COLOR, DOOR_COLOR, IFC_PATH, ROOF_COLOR
+from tqdm import tqdm
+from config import IFC_PATH
+from dto.enum.construction_type import ConstructionType
+from dto.mesh import ConstructionMesh
 
 
 def add_style(model, representation, colors, transparency):
@@ -44,7 +49,7 @@ def add_element(model, body_context, mesh, element, colors, transparency=0.0):
     add_style(model, representation, colors, transparency)
 
 
-def meshes_to_bim(meshes):
+def meshes_to_bim(meshes: List[ConstructionMesh]):
     model = ifcopenshell.file()
     project = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcProject", name="Project")
     ifcopenshell.api.context.add_context(model, context_type="Model")
@@ -99,19 +104,26 @@ def meshes_to_bim(meshes):
     windows = []
     doors = []
     roofs = []
-    for mesh in meshes:
-        colors = mesh.vertex_colors[0] * 255
-        mesh_colors = mesh.vertex_colors[0]
-        if all(colors == WALL_COLOR):
+
+    print(f'Convert {len(meshes)} meshed to IFC objects')
+
+    for mesh in tqdm(meshes):
+        mesh_colors = mesh.vertex_colors
+        if (mesh.construction_type == ConstructionType.WALL
+                or mesh.construction_type == ConstructionType.CEILING
+                or mesh.construction_type == ConstructionType.FLOOR
+                or mesh.construction_type == ConstructionType.FITTINGS
+        ):
+            name = str(mesh.construction_type)
             wall = ifcopenshell.api.root.create_entity(
                 model,
                 ifc_class="IfcWall",
-                name="Wall",
+                name=name,
                 predefined_type="STRAIGHT"
             )
             walls.append(wall)
             add_element(model, body_context, mesh, wall, mesh_colors)
-        elif all(colors == WINDOW_COLOR):
+        elif mesh.construction_type == ConstructionType.WINDOW:
             pass
             window = ifcopenshell.api.root.create_entity(
                 model,
@@ -121,7 +133,7 @@ def meshes_to_bim(meshes):
             )
             windows.append(window)
             add_element(model, body_context, mesh, window, mesh_colors, transparency=0.5)
-        elif all(colors == DOOR_COLOR):
+        elif mesh.construction_type == ConstructionType.DOOR:
             door = ifcopenshell.api.root.create_entity(
                 model,
                 ifc_class="IfcDoor",
@@ -130,7 +142,7 @@ def meshes_to_bim(meshes):
             )
             doors.append(door)
             add_element(model, body_context, mesh, door, mesh_colors)
-        elif all(colors == ROOF_COLOR):
+        elif mesh.construction_type == ConstructionType.ROOF:
             roof = ifcopenshell.api.root.create_entity(
                 model,
                 ifc_class="IfcRoof",
@@ -140,7 +152,7 @@ def meshes_to_bim(meshes):
             roofs.append(roof)
             add_element(model, body_context, mesh, roof, mesh_colors)
         else:
-            raise ValueError(f'Unknown RGB color {colors}')
+            raise ValueError(f'Unknown type {mesh.construction_type}')
 
     ifcopenshell.api.aggregate.assign_object(
         model,

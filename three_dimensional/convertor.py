@@ -2,10 +2,14 @@ from typing import List, Tuple
 
 import numpy as np
 import open3d as o3d
+import trimesh
 
+from tqdm import tqdm
 from collections import deque
 from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH, IFC_PATH, ROOF_COLOR
+from dto.enum.construction_type import ConstructionType
 from dto.enum.position_type import PositionType
+from dto.mesh import ConstructionMesh, CylinderMesh, PolygonMesh, RectangleMesh, PointsMesh
 from dto.point import Point
 from dto.polygon import Polygon
 from dto.rect import Rect
@@ -102,131 +106,77 @@ def find_outside_corner_points(width: int, height: int, rects: List[Rect]) -> Li
     return list(corner_points)
 
 
-def combine_mashes(meshes: List[o3d.geometry.TriangleMesh]) -> o3d.geometry.TriangleMesh:
+def combine_mashes(meshes: List[ConstructionMesh]) -> ConstructionMesh:
     if len(meshes) == 0:
         raise ValueError('Can\'t combine empty meshes.')
-    final_mesh = meshes[0]
+    final_mesh = meshes[0].mesh
     for i in range(0, len(meshes)):
-        final_mesh += meshes[i]
-    return final_mesh
+        final_mesh += meshes[i].mesh
+    return ConstructionMesh(final_mesh, ConstructionType.COMBINED)
 
 
-# color - RGB array [0..255, 0..255, 0..255]
-def create_mash(vertices, triangles, color: List[int]) -> o3d.geometry.TriangleMesh:
-    mesh = o3d.geometry.TriangleMesh()
-    mesh.vertices = o3d.utility.Vector3dVector(vertices)
-    mesh.triangles = o3d.utility.Vector3iVector(triangles)
-    mesh.compute_vertex_normals()
-    norm_color = [c / 255 for c in color]
-    mesh.paint_uniform_color(norm_color)
-
-    return mesh
+def create_wall_mesh(rect: Rect, wall_height: int, color: List[int]) -> ConstructionMesh:
+    return RectangleMesh(
+        rect=rect,
+        bottom=0,
+        top=wall_height,
+        color=color,
+        construction_type=ConstructionType.WALL
+    )
 
 
-def create_mash_points(points: List[Tuple[int, int, int]], color: List[int]) -> o3d.geometry.TriangleMesh:
-    vertices = []
-    for (x, y, z) in points:
-        vertices.append([x, y, z])
-
-    triangles = []
-
-    if len(points) == 8:
-        triangles = [
-            [0, 1, 2], [0, 2, 3],
-            [4, 6, 5], [4, 7, 6],
-            [0, 4, 5], [0, 5, 1],
-            [1, 5, 6], [1, 6, 2],
-            [2, 6, 7], [2, 7, 3],
-            [3, 7, 4], [3, 4, 0]
-        ]
-    elif len(points) == 6:
-        triangles = [
-            [0, 1, 2], [3, 5, 4],
-            [0, 3, 1], [1, 3, 4],
-            [1, 4, 2], [2, 4, 5],
-            [2, 5, 0], [0, 5, 3]
-        ]
-
-    if len(triangles) == 0:
-        raise ValueError(f'Unsupported count of points with {len(points)}.')
-    return create_mash(vertices, triangles, color)
+def create_doorway_mesh(rect: Rect, door_height: int, wall_height: int, color: List[int]) -> ConstructionMesh:
+    return RectangleMesh(
+        rect=rect,
+        bottom=door_height,
+        top=wall_height,
+        color=color,
+        construction_type=ConstructionType.WALL
+    )
 
 
-def create_mash_rectangle(rect: Rect, bottom: int, top: int, color: List[int]) -> o3d.geometry.TriangleMesh:
-    vertices = [
-        [rect.start_point.x, rect.start_point.y, bottom],
-        [rect.start_point.x, rect.end_point.y, bottom],
-        [rect.end_point.x, rect.end_point.y, bottom],
-        [rect.end_point.x, rect.start_point.y, bottom],
-
-        [rect.start_point.x, rect.start_point.y, top],
-        [rect.start_point.x, rect.end_point.y, top],
-        [rect.end_point.x, rect.end_point.y, top],
-        [rect.end_point.x, rect.start_point.y, top],
-    ]
-
-    triangles = [
-        [0, 1, 2], [0, 2, 3],
-        [4, 6, 5], [4, 7, 6],
-        [0, 4, 5], [0, 5, 1],
-        [1, 5, 6], [1, 6, 2],
-        [2, 6, 7], [2, 7, 3],
-        [3, 7, 4], [3, 4, 0]
-    ]
-    return create_mash(vertices, triangles, color)
+def create_door_mesh(rect: Rect, door_height: int, color: List[int]) -> ConstructionMesh:
+    return RectangleMesh(
+        rect=rect,
+        bottom=0,
+        top=door_height,
+        color=color,
+        construction_type=ConstructionType.DOOR
+    )
 
 
-def create_mash_polygon(polygon: Polygon, bottom: int, top: int, color: List[int]) -> o3d.geometry.TriangleMesh:
-    vertices = []
-    for point in polygon.points:
-        vertices.append([point.x, point.y, top])
-        vertices.append([point.x, point.y, bottom])
-
-    triangles = []
-    if len(polygon.points) < 3:
-        raise ValueError("Polygon must have at least 3 points")
-    for i in range(len(polygon.points)):
-        n = len(polygon.points)
-        v1 = i * 2
-        v2 = (i + 1) % n * 2
-        v3 = (i + 1) % n * 2 + 1
-        v4 = i * 2 + 1
-        triangles.append([v1, v2, v3])
-        triangles.append([v1, v3, v4])
-    for i in range(2, len(polygon.points)):
-        triangles.append([0, i * 2, (i - 1) * 2])
-    for i in range(2, len(polygon.points)):
-        triangles.append([1, (i - 1) * 2 + 1, i * 2 + 1])
-
-    return create_mash(vertices, triangles, color)
+def create_floor_mesh(polygon: Polygon, thickness: int, color: List[int]) -> ConstructionMesh:
+    return PolygonMesh(
+        polygon=polygon,
+        bottom=-thickness,
+        top=0,
+        color=color,
+        construction_type=ConstructionType.FLOOR,
+    )
 
 
-def create_wall_mesh(rect: Rect, wall_height: int, color: List[int]) -> o3d.geometry.TriangleMesh:
-    return create_mash_rectangle(rect, bottom=0, top=wall_height, color=color)
-
-
-def create_doorway_mesh(rect: Rect, door_height: int, wall_height: int, color: List[int]) -> o3d.geometry.TriangleMesh:
-    return create_mash_rectangle(rect, bottom=door_height, top=wall_height, color=color)
-
-
-def create_door_mesh(rect: Rect, door_height: int, color: List[int]) -> o3d.geometry.TriangleMesh:
-    return create_mash_rectangle(rect, bottom=0, top=door_height, color=color)
-
-
-def create_floor_mesh(polygon: Polygon, thickness: int) -> o3d.geometry.TriangleMesh:
-    return create_mash_polygon(polygon, bottom=-thickness, top=0, color=WALL_COLOR)
-
-
-def create_ceiling_mesh(polygon: Polygon, thickness: int, wall_height: int) -> o3d.geometry.TriangleMesh:
-    return create_mash_polygon(polygon, bottom=wall_height, top=wall_height + thickness, color=WALL_COLOR)
+def create_ceiling_mesh(polygon: Polygon, thickness: int, wall_height: int, color: List[int]) -> ConstructionMesh:
+    return PolygonMesh(
+        polygon=polygon,
+        bottom=wall_height,
+        top=wall_height + thickness,
+        color=color,
+        construction_type=ConstructionType.CEILING,
+    )
 
 
 def create_window_frame_bottom_mesh(
         rect: Rect,
         windows_bottom_height: int,
         color: List[int]
-) -> o3d.geometry.TriangleMesh:
-    return create_mash_rectangle(rect, bottom=0, top=windows_bottom_height, color=color)
+) -> ConstructionMesh:
+    return RectangleMesh(
+        rect=rect,
+        bottom=0,
+        top=windows_bottom_height,
+        color=color,
+        construction_type=ConstructionType.WALL
+    )
 
 
 def create_window_frame_top_mesh(
@@ -234,8 +184,14 @@ def create_window_frame_top_mesh(
         windows_top_height: int,
         wall_height: int,
         color: List[int]
-) -> o3d.geometry.TriangleMesh:
-    return create_mash_rectangle(rect, bottom=windows_top_height, top=wall_height, color=color)
+) -> ConstructionMesh:
+    return RectangleMesh(
+        rect=rect,
+        bottom=windows_top_height,
+        top=wall_height,
+        color=color,
+        construction_type=ConstructionType.WALL
+    )
 
 
 def create_window_mesh(
@@ -243,8 +199,36 @@ def create_window_mesh(
         windows_bottom_height: int,
         windows_top_height: int,
         color: List[int]
-) -> o3d.geometry.TriangleMesh:
-    return create_mash_rectangle(rect, bottom=windows_bottom_height, top=windows_top_height, color=color)
+) -> ConstructionMesh:
+    return RectangleMesh(
+        rect=rect,
+        bottom=windows_bottom_height,
+        top=windows_top_height,
+        color=color,
+        construction_type=ConstructionType.WINDOW
+    )
+
+
+def create_roof_mesh(
+        points: List[Tuple[int, int, int]],
+        color: List[int]
+) -> ConstructionMesh:
+    return PointsMesh(
+        points=points,
+        color=color,
+        construction_type=ConstructionType.ROOF
+    )
+
+
+def create_wall_roof_mesh(
+        points: List[Tuple[int, int, int]],
+        color: List[int]
+) -> ConstructionMesh:
+    return PointsMesh(
+        points=points,
+        color=color,
+        construction_type=ConstructionType.WALL
+    )
 
 
 def calculate_door_height(front_door_rect: Rect) -> int:
@@ -278,6 +262,124 @@ def create_roof(rect: Rect, height: int, position_type: PositionType, slopes_cou
     )
 
 
+def o3d_to_trimesh(o3d_mesh):
+    vertices = np.asarray(o3d_mesh.vertices)
+    faces = np.asarray(o3d_mesh.triangles)
+    return trimesh.Trimesh(vertices=vertices, faces=faces)
+
+
+def create_fittings_for_wall_mesh(mesh: ConstructionMesh, step: int):
+    meshes = []
+
+    tri_mesh = o3d_to_trimesh(mesh)
+
+    min_x = min(point[0] for point in mesh.vertices)
+    max_x = max(point[0] for point in mesh.vertices)
+    step_x = min(max_x - min_x - 1, step)
+    last_x = 0
+
+    min_y = min(point[1] for point in mesh.vertices)
+    max_y = max(point[1] for point in mesh.vertices)
+    step_y = min(max_y - min_y - 1, step)
+    last_y = 0
+
+    min_z = min(point[2] for point in mesh.vertices)
+    max_z = max(point[2] for point in mesh.vertices)
+    step_z = min(max_z - min_z - 1, step)
+    last_z = 0
+
+    # Add vertical
+    last_x = 0
+    for x in np.arange(min_x + 0.5, max_x - 0.4, 1.0):
+        if last_x % step_x == 0 or x == max_x - 0.5:
+            last_y = 0
+            for y in np.arange(min_y + 0.5, max_y - 0.4, 1.0):
+                if last_y % step_y == 0 or y == max_y - 0.5:
+                    first_time = True
+                    z1 = -1
+                    z2 = -1
+                    for z in np.arange(min_z + 0.5, max_z - 0.4, 1.0):
+                        if tri_mesh.contains([[x, y, z]]):
+                            if first_time:
+                                first_time = False
+                                z1 = z
+                            z2 = z
+                    height = z2 - z1
+                    if height > 0:
+                        m = CylinderMesh(
+                            center_point=[x, y, z1 + height / 2],
+                            radius=0.5,
+                            height=height,
+                            color=WALL_COLOR,
+                            construction_type=ConstructionType.FITTINGS
+                        )
+                        meshes.append(m)
+                last_y += 1
+        last_x += 1
+
+    # Add horizontal x
+    last_y = 0
+    for y in np.arange(min_y + 0.5, max_y - 0.4, 1.0):
+        if last_y % step_y == 0 or y == max_y - 0.5:
+            last_z = 0
+            for z in np.arange(min_z + 0.5, max_z - 0.4, 1.0):
+                if last_z % step_z == 0 or z == max_z - 0.5:
+                    first_time = True
+                    x1 = -1
+                    x2 = -1
+                    for x in np.arange(min_x + 0.5, max_x - 0.4, 1.0):
+                        if tri_mesh.contains([[x, y, z]]):
+                            if first_time:
+                                first_time = False
+                                x1 = x
+                            x2 = x
+                    height = x2 - x1
+                    if height > 0:
+                        m = CylinderMesh(
+                            center_point=[x1 + height / 2, y, z],
+                            radius=0.5,
+                            height=height,
+                            color=WALL_COLOR,
+                            rotate_y=90,
+                            construction_type=ConstructionType.FITTINGS
+                        )
+                        meshes.append(m)
+                last_z += 1
+        last_y += 1
+
+    # Add horizontal y
+    last_x = 0
+    for x in np.arange(min_x + 0.5, max_x - 0.4, 1.0):
+        if last_x % step_x == 0 or x == max_x - 0.5:
+            last_z = 0
+            for z in np.arange(min_z + 0.5, max_z - 0.4, 1.0):
+                if last_z % step_z == 0 or z == max_z - 0.5:
+                    first_time = True
+                    y1 = -1
+                    y2 = -1
+                    for y in np.arange(min_y + 0.5, max_y - 0.4, 1.0):
+                        if tri_mesh.contains([[x, y, z]]):
+                            if first_time:
+                                first_time = False
+                                y1 = y
+                            y2 = y
+                    height = y2 - y1
+                    if height > 0:
+                        m = CylinderMesh(
+                            center_point=[x, y1 + height / 2, z],
+                            radius=0.5,
+                            height=height,
+                            color=WALL_COLOR,
+                            rotate_x=90,
+                            construction_type=ConstructionType.FITTINGS
+                        )
+                        meshes.append(m)
+                last_z += 1
+        last_x += 1
+
+    return meshes
+
+
 def create_3d(
         front_door_rect: Rect,
         rects: List[Rect],
@@ -287,7 +389,7 @@ def create_3d(
         need_save: bool = True,
         need_show: bool = False
 ):
-    meshes = []
+    meshes: List[ConstructionMesh] = []
 
     # Todo: Add getting types by description
     wall_type, window_type = WallSizeType.STANDARD, WindowSizeType.STANDARD
@@ -298,20 +400,29 @@ def create_3d(
 
     outside_corner = find_outside_corner_points(width, height, rects + [front_door_rect])
     outside_polygon = Polygon(points=outside_corner, color=WALL_COLOR)
-    meshes.append(create_floor_mesh(outside_polygon, thickness=DEFAULT_WALL_THICKNESS))
-    meshes.append(create_ceiling_mesh(outside_polygon, thickness=DEFAULT_WALL_THICKNESS, wall_height=wall_height))
+    meshes.append(create_floor_mesh(
+        polygon=outside_polygon,
+        thickness=DEFAULT_WALL_THICKNESS,
+        color=WALL_COLOR,
+    ))
+    meshes.append(create_ceiling_mesh(
+        polygon=outside_polygon,
+        thickness=DEFAULT_WALL_THICKNESS,
+        wall_height=wall_height,
+        color=WALL_COLOR,
+    ))
 
     # Todo: Add finding of types
     roof = create_roof(
         rect=outside_polygon.to_rect(),
         height=wall_height,
         position_type=PositionType.LEFT,
-        slopes_count=1
+        slopes_count=2
     )
     for wall in roof.get_coordinates_of_walls():
-        meshes.append(create_mash_points(wall, WALL_COLOR))
-    for wall in roof.get_coordinates_of_slopes():
-        meshes.append(create_mash_points(wall, ROOF_COLOR))
+        meshes.append(create_wall_roof_mesh(wall, WALL_COLOR))
+    for slope in roof.get_coordinates_of_slopes():
+        meshes.append(create_roof_mesh(slope, ROOF_COLOR))
 
     for rect in rects + [front_door_rect]:
         if rect.rect_type == RectType.WALL:
@@ -345,10 +456,15 @@ def create_3d(
             meshes.append(window_frame_top)
         else:
             raise ValueError(f'Unknown type = {rect.rect_type}')
+    for mesh in tqdm(meshes):
+        if mesh.construction_type == ConstructionType.WALL:
+            fittings = create_fittings_for_wall_mesh(mesh, 40)
+            for fitting in fittings:
+                meshes.append(fitting)
     if need_save:
         meshes_to_bim(meshes)
         print(f'3D BIM model saved in file {IFC_PATH}')
-        o3d.io.write_triangle_mesh(OBJ_PATH, combine_mashes(meshes))
+        o3d.io.write_triangle_mesh(OBJ_PATH, combine_mashes(meshes).mesh)
         print(f'3D obj saved in file {OBJ_PATH}')
         save_as_gif(meshes, gif_file_name=GIF_PATH)
         print(f'Gif saved in file {GIF_PATH}')

@@ -113,6 +113,7 @@ def meshes_to_bim(meshes: List[ConstructionMesh]):
                 or mesh.construction_type == ConstructionType.CEILING
                 or mesh.construction_type == ConstructionType.FLOOR
                 or mesh.construction_type == ConstructionType.FITTINGS
+                or mesh.construction_type == ConstructionType.BEAM
         ):
             name = str(mesh.construction_type)
             wall = ifcopenshell.api.root.create_entity(

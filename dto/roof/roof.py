@@ -369,10 +369,9 @@ class Roof:
         x2, y2 = self.rect.end_point.x, self.rect.end_point.y
         rt = self.roof_thickness
         ind = self.indent
-        cos = int(math.cos(math.radians(self.angle)) * self.beam_width)
         return self._create_angle_block_for_two_slopes(
-            (x1 - ind - cos, y1 - ind - cos),
-            (x2 + ind + cos, y2 + ind + cos),
+            (x1 - ind, y1 - ind),
+            (x2 + ind, y2 + ind),
             rt, self.beam_width
         )
 

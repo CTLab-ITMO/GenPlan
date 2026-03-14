@@ -6,7 +6,7 @@ import trimesh
 
 from tqdm import tqdm
 from collections import deque
-from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH, IFC_PATH, ROOF_COLOR
+from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH, IFC_PATH, ROOF_COLOR, BEAM_COLOR
 from dto.enum.construction_type import ConstructionType
 from dto.enum.position_type import PositionType
 from dto.mesh import ConstructionMesh, CylinderMesh, PolygonMesh, RectangleMesh, PointsMesh
@@ -28,6 +28,11 @@ DEFAULT_ROOF_THICKNESS = 10
 DEFAULT_ROOF_ANGLE_1 = 15
 DEFAULT_ROOF_ANGLE_2 = 30
 DEFAULT_ROOF_INDENT = 50
+DEFAULT_BEAM_THICKNESS = 10
+DEFAULT_BEAM_WIDTH = 20
+DEFAULT_BEAM_SPACE = 50
+# space between angle and vertical beam in 2 slopes roof
+DEFAULT_BEAM_ANGLE_SPACE = 70
 
 
 def find_outside_corner_points(width: int, height: int, rects: List[Rect]) -> List[Point]:
@@ -231,6 +236,17 @@ def create_wall_roof_mesh(
     )
 
 
+def create_beam_roof_mesh(
+        points: List[Tuple[int, int, int]],
+        color: List[int]
+) -> ConstructionMesh:
+    return PointsMesh(
+        points=points,
+        color=color,
+        construction_type=ConstructionType.BEAM
+    )
+
+
 def calculate_door_height(front_door_rect: Rect) -> int:
     return int((DEFAULT_DOOR_HEIGHT / DEFAULT_DOOR_WIDTH) * front_door_rect.max_size)
 
@@ -254,11 +270,15 @@ def create_roof(rect: Rect, height: int, position_type: PositionType, slopes_cou
         rect=rect,
         roof_thickness=DEFAULT_ROOF_THICKNESS,
         wall_thickness=DEFAULT_WALL_THICKNESS,
+        beam_thickness=DEFAULT_BEAM_THICKNESS,
+        beam_width=DEFAULT_BEAM_WIDTH,
+        beam_space=DEFAULT_BEAM_SPACE,
+        beam_angle_space=DEFAULT_BEAM_ANGLE_SPACE,
         angle=angle_degrees,
         slopes_count=slopes_count,
         indent=DEFAULT_ROOF_INDENT,
         height=height + DEFAULT_WALL_THICKNESS,
-        position_type=position_type
+        position_type=position_type,
     )
 
 
@@ -423,6 +443,8 @@ def create_3d(
         meshes.append(create_wall_roof_mesh(wall, WALL_COLOR))
     for slope in roof.get_coordinates_of_slopes():
         meshes.append(create_roof_mesh(slope, ROOF_COLOR))
+    for beam in roof.get_coordinates_of_beams():
+        meshes.append(create_beam_roof_mesh(beam, BEAM_COLOR))
 
     for rect in rects + [front_door_rect]:
         if rect.rect_type == RectType.WALL:
@@ -466,7 +488,7 @@ def create_3d(
         print(f'3D BIM model saved in file {IFC_PATH}')
         o3d.io.write_triangle_mesh(OBJ_PATH, combine_mashes(meshes).mesh)
         print(f'3D obj saved in file {OBJ_PATH}')
-        save_as_gif(meshes, gif_file_name=GIF_PATH)
+        save_as_gif([m.mesh for m in meshes], gif_file_name=GIF_PATH)
         print(f'Gif saved in file {GIF_PATH}')
     if need_show:
-        o3d.visualization.draw_geometries(meshes)
+        o3d.visualization.draw_geometries([m.mesh for m in meshes])

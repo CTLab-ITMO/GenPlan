@@ -19,6 +19,7 @@ DOOR_COLOR = [150, 80, 50]
 WINDOW_COLOR = [153, 204, 255]
 WALL_COLOR = [128, 128, 128]
 ROOF_COLOR = [69, 21, 13]
+BEAM_COLOR = [69, 21, 13]
 
 USE_WHITE_LOSS = True
 EDGING_TYPE = "rectangle"  # ["rectangle", "random_mask"]

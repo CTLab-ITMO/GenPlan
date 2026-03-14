@@ -10,3 +10,4 @@ class ConstructionType(Enum):
     FITTINGS = 4
     FLOOR = 5
     CEILING = 6
+    BEAM = 7

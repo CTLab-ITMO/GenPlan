@@ -400,6 +400,42 @@ def create_fittings_for_wall_mesh(mesh: ConstructionMesh, step: int):
     return meshes
 
 
+def get_door_type(front_door_rect: Rect, outside_polygon: Polygon) -> PositionType:
+    x1 = front_door_rect.start_point.x
+    y1 = front_door_rect.start_point.y
+    x2 = front_door_rect.end_point.x
+    y2 = front_door_rect.end_point.y
+
+    left = 0
+    right = 0
+    up = 0
+    bottom = 0
+
+    mod = 5  # Need to work with inaccuracy of pixels
+
+    for p in outside_polygon.points:
+        if abs(p.x - x1) < mod:
+            left += 1
+        if abs(p.y - y1) < mod:
+            up += 1
+        if abs(p.x - x2) < mod:
+            right += 1
+        if abs(p.y - y2) < mod:
+            bottom += 1
+
+    if sum(1 for num in [left, right, up, bottom] if num != 0) != 1:
+        raise ValueError("Unknown door position")
+
+    if left > 0:
+        return PositionType.LEFT
+    elif right > 0:
+        return PositionType.RIGHT
+    elif up > 0:
+        return PositionType.UP
+    elif bottom > 0:
+        return PositionType.BOTTOM
+
+
 def create_3d(
         front_door_rect: Rect,
         rects: List[Rect],
@@ -432,11 +468,10 @@ def create_3d(
         color=WALL_COLOR,
     ))
 
-    # Todo: Add finding of types
     roof = create_roof(
         rect=outside_polygon.to_rect(),
         height=wall_height,
-        position_type=PositionType.LEFT,
+        position_type=get_door_type(front_door_rect, outside_polygon),
         slopes_count=2
     )
     for wall in roof.get_coordinates_of_walls():

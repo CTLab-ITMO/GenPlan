@@ -164,7 +164,7 @@ def create_windows_and_doors_2d(walls: [Rect], width: int, height: int) -> [Rect
     return list(doors) + list(windows)
 
 
-# return outsize door and list of other doors and windows
+# return outside door and list of other doors and windows
 def create_windows_and_doors_3d(walls: [Rect]) -> (Rect, [Rect]):
     outside_openings, inside_openings = find_inside_and_outside(walls)
     outside_door = find_smallest_opening(outside_openings)

@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 import numpy as np
 import open3d as o3d
@@ -17,6 +17,8 @@ from dto.enum.rect_type import RectType
 from dto.enum.wall_size_type import WallSizeType
 from dto.enum.window_size_type import WindowSizeType
 from dto.roof.roof import Roof
+from metrics.endurance import calculate_endurance_wall
+from metrics.illumination import calculate_illumination
 from three_dimensional.bim_coverter import meshes_to_bim
 from three_dimensional.visualization import save_as_gif
 
@@ -435,6 +437,12 @@ def get_door_type(front_door_rect: Rect, outside_polygon: Polygon) -> PositionTy
     elif bottom > 0:
         return PositionType.BOTTOM
 
+def show_metrics(nlc: float, endurance: Dict[str, bool]):
+    print("Metrics of generated Plan :")
+    print(f"- NLC (natural light coefficient) = {nlc:.2f}")
+    for key in endurance:
+        print(f"- {key} is {endurance[key]}")
+
 
 def create_3d(
         front_door_rect: Rect,
@@ -446,6 +454,8 @@ def create_3d(
         need_show: bool = False
 ):
     meshes: List[ConstructionMesh] = []
+    windows: List[Rect] = []
+    walls: List[Rect] = []
 
     # Todo: Add getting types by description
     wall_type, window_type = WallSizeType.STANDARD, WindowSizeType.STANDARD
@@ -483,6 +493,7 @@ def create_3d(
 
     for rect in rects + [front_door_rect]:
         if rect.rect_type == RectType.WALL:
+            walls.append(rect)
             mesh = create_wall_mesh(rect, wall_height=wall_height, color=WALL_COLOR)
             meshes.append(mesh)
         elif rect.rect_type == RectType.DOOR:
@@ -491,6 +502,7 @@ def create_3d(
             doorway = create_doorway_mesh(rect, door_height=door_height, wall_height=wall_height, color=WALL_COLOR)
             meshes.append(doorway)
         elif rect.rect_type == RectType.WINDOW:
+            windows.append(rect)
             window = create_window_mesh(
                 rect,
                 windows_bottom_height=windows_bottom_height,
@@ -518,6 +530,10 @@ def create_3d(
             fittings = create_fittings_for_wall_mesh(mesh, 40)
             for fitting in fittings:
                 meshes.append(fitting)
+    show_metrics(
+        nlc=calculate_illumination(outside_polygon, windows),
+        endurance=calculate_endurance_wall(wall_height, walls, 0.5)
+    )
     if need_save:
         meshes_to_bim(meshes)
         print(f'3D BIM model saved in file {IFC_PATH}')

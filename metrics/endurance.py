@@ -17,7 +17,6 @@ def calculate_endurance_wall(
             thickness=w.min_size,
             beam_radius=beam_radius
         )
-        print(m)
         if final_m is None:
             final_m = m
         else:

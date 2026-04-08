@@ -12,9 +12,9 @@ def calculate_endurance_wall(
     final_m = None
     for w in walls:
         m = calculate_endurance(
-            height=height,
-            width=w.max_size,
-            thickness=w.min_size,
+            height=height / 10.0,
+            width=w.max_size / 10.0,
+            thickness=w.min_size / 10.0,
             beam_radius=beam_radius
         )
         if final_m is None:
@@ -40,9 +40,9 @@ def calculate_endurance(
         thickness: float,
         beam_radius: float,
 ) -> Dict[str, bool]:
-    concrete_resistance = 11.5  # расчётное сопротивление бетона, МПа
-    beam_resistance = 365  # расчётное сопротивление арматуры, МПа
-    concrete_stretch = 0.91  # сопротивление бетона на растяжение, МПа
+    concrete_resistance = 11.5 * 1e6  # расчётное сопротивление бетона, Па
+    beam_resistance = 365 * 1e6  # расчётное сопротивление арматуры, Па
+    concrete_stretch = 0.91 * 1e6  # сопротивление бетона на растяжение, Па
     phi = 0.9  # коэффициент устойчивости
     p = 2500  # плотность бетонв кг/м³
     q = 1.5  # ветровая нагрузка (зависит от региона)
@@ -53,12 +53,12 @@ def calculate_endurance(
     wall_square = width * thickness
     thickness_real = thickness - beam_radius
 
-    transverse_force = p * q * height  # Ветровая нагрузка/Поперечная сила, кН
-    bending_moment = transverse_force * height / 2  # Изгибающий момент, кН·м
+    transverse_force = p * q * height  # Ветровая нагрузка/Поперечная сила, Н
+    bending_moment = transverse_force * height / 2  # Изгибающий момент, Н·м
     inertia_radius = thickness / (12 ** 0.5)  # Радиус инерции, м
 
     # Endurance
-    wall_endurance = wall_weight / wall_square
+    wall_endurance = wall_weight / wall_square # Па
     wall_endurance_max = concrete_resistance * phi
 
     # Bend
@@ -72,8 +72,8 @@ def calculate_endurance(
     shift_min = transverse_force
 
     # Flexibility
-    wall_flexibility = height / inertia_radius
-    wall_flexibility_max = 25
+    wall_flexibility = height / inertia_radius # Минимальный радиус инерции сечения
+    wall_flexibility_max = 200
 
     return {
         "Endurance": wall_endurance <= wall_endurance_max,

@@ -30,6 +30,7 @@ DEFAULT_ROOF_THICKNESS = 10
 DEFAULT_ROOF_ANGLE_1 = 15
 DEFAULT_ROOF_ANGLE_2 = 30
 DEFAULT_ROOF_INDENT = 50
+DEFAULT_BEAM_RADIUS = 0.5
 DEFAULT_BEAM_THICKNESS = 10
 DEFAULT_BEAM_WIDTH = 20
 DEFAULT_BEAM_SPACE = 50
@@ -312,15 +313,15 @@ def create_fittings_for_wall_mesh(mesh: ConstructionMesh, step: int):
 
     # Add vertical
     last_x = 0
-    for x in np.arange(min_x + 0.5, max_x - 0.4, 1.0):
-        if last_x % step_x == 0 or x == max_x - 0.5:
+    for x in np.arange(min_x + DEFAULT_BEAM_RADIUS, max_x - DEFAULT_BEAM_RADIUS + 0.1, 1.0):
+        if last_x % step_x == 0 or x == max_x - DEFAULT_BEAM_RADIUS:
             last_y = 0
-            for y in np.arange(min_y + 0.5, max_y - 0.4, 1.0):
-                if last_y % step_y == 0 or y == max_y - 0.5:
+            for y in np.arange(min_y + DEFAULT_BEAM_RADIUS, max_y - DEFAULT_BEAM_RADIUS + 0.1, 1.0):
+                if last_y % step_y == 0 or y == max_y - DEFAULT_BEAM_RADIUS:
                     first_time = True
                     z1 = -1
                     z2 = -1
-                    for z in np.arange(min_z + 0.5, max_z - 0.4, 1.0):
+                    for z in np.arange(min_z + DEFAULT_BEAM_RADIUS, max_z - DEFAULT_BEAM_RADIUS + 0.1, 1.0):
                         if tri_mesh.contains([[x, y, z]]):
                             if first_time:
                                 first_time = False
@@ -330,7 +331,7 @@ def create_fittings_for_wall_mesh(mesh: ConstructionMesh, step: int):
                     if height > 0:
                         m = CylinderMesh(
                             center_point=[x, y, z1 + height / 2],
-                            radius=0.5,
+                            radius=DEFAULT_BEAM_RADIUS,
                             height=height,
                             color=WALL_COLOR,
                             construction_type=ConstructionType.FITTINGS
@@ -341,15 +342,15 @@ def create_fittings_for_wall_mesh(mesh: ConstructionMesh, step: int):
 
     # Add horizontal x
     last_y = 0
-    for y in np.arange(min_y + 0.5, max_y - 0.4, 1.0):
-        if last_y % step_y == 0 or y == max_y - 0.5:
+    for y in np.arange(min_y + DEFAULT_BEAM_RADIUS, max_y - DEFAULT_BEAM_RADIUS + 0.1, 1.0):
+        if last_y % step_y == 0 or y == max_y - DEFAULT_BEAM_RADIUS:
             last_z = 0
-            for z in np.arange(min_z + 0.5, max_z - 0.4, 1.0):
-                if last_z % step_z == 0 or z == max_z - 0.5:
+            for z in np.arange(min_z + DEFAULT_BEAM_RADIUS, max_z - DEFAULT_BEAM_RADIUS + 0.1, 1.0):
+                if last_z % step_z == 0 or z == max_z - DEFAULT_BEAM_RADIUS:
                     first_time = True
                     x1 = -1
                     x2 = -1
-                    for x in np.arange(min_x + 0.5, max_x - 0.4, 1.0):
+                    for x in np.arange(min_x + DEFAULT_BEAM_RADIUS, max_x - DEFAULT_BEAM_RADIUS + 0.1, 1.0):
                         if tri_mesh.contains([[x, y, z]]):
                             if first_time:
                                 first_time = False
@@ -359,7 +360,7 @@ def create_fittings_for_wall_mesh(mesh: ConstructionMesh, step: int):
                     if height > 0:
                         m = CylinderMesh(
                             center_point=[x1 + height / 2, y, z],
-                            radius=0.5,
+                            radius=DEFAULT_BEAM_RADIUS,
                             height=height,
                             color=WALL_COLOR,
                             rotate_y=90,
@@ -371,15 +372,15 @@ def create_fittings_for_wall_mesh(mesh: ConstructionMesh, step: int):
 
     # Add horizontal y
     last_x = 0
-    for x in np.arange(min_x + 0.5, max_x - 0.4, 1.0):
-        if last_x % step_x == 0 or x == max_x - 0.5:
+    for x in np.arange(min_x + DEFAULT_BEAM_RADIUS, max_x - DEFAULT_BEAM_RADIUS + 0.1, 1.0):
+        if last_x % step_x == 0 or x == max_x - DEFAULT_BEAM_RADIUS:
             last_z = 0
-            for z in np.arange(min_z + 0.5, max_z - 0.4, 1.0):
-                if last_z % step_z == 0 or z == max_z - 0.5:
+            for z in np.arange(min_z + DEFAULT_BEAM_RADIUS, max_z - DEFAULT_BEAM_RADIUS + 0.1, 1.0):
+                if last_z % step_z == 0 or z == max_z - DEFAULT_BEAM_RADIUS:
                     first_time = True
                     y1 = -1
                     y2 = -1
-                    for y in np.arange(min_y + 0.5, max_y - 0.4, 1.0):
+                    for y in np.arange(min_y + DEFAULT_BEAM_RADIUS, max_y - DEFAULT_BEAM_RADIUS + 0.1, 1.0):
                         if tri_mesh.contains([[x, y, z]]):
                             if first_time:
                                 first_time = False
@@ -389,7 +390,7 @@ def create_fittings_for_wall_mesh(mesh: ConstructionMesh, step: int):
                     if height > 0:
                         m = CylinderMesh(
                             center_point=[x, y1 + height / 2, z],
-                            radius=0.5,
+                            radius=DEFAULT_BEAM_RADIUS,
                             height=height,
                             color=WALL_COLOR,
                             rotate_x=90,
@@ -441,7 +442,11 @@ def show_metrics(nlc: float, endurance: Dict[str, bool]):
     print("Metrics of generated Plan :")
     print(f"- NLC (natural light coefficient) = {nlc:.2f}")
     for key in endurance:
-        print(f"- {key} is {endurance[key]}")
+        if endurance[key]:
+            checked_str = "meets the standards"
+        else:
+            checked_str = "does not meet the standards"
+        print(f"- {key} {checked_str}")
 
 
 def create_3d(
@@ -532,7 +537,7 @@ def create_3d(
                 meshes.append(fitting)
     show_metrics(
         nlc=calculate_illumination(outside_polygon, windows),
-        endurance=calculate_endurance_wall(wall_height, walls, 0.5)
+        endurance=calculate_endurance_wall(wall_height, walls, DEFAULT_BEAM_RADIUS)
     )
     if need_save:
         meshes_to_bim(meshes)

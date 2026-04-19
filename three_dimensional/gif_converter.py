@@ -5,14 +5,16 @@ from tqdm import tqdm
 import shutil
 from PIL import Image
 
+from dto.mesh import ConstructionMesh
 
-def save_as_gif(meshes: List[o3d.geometry.TriangleMesh], gif_file_name: str):
+
+def save_meashes_as_gif(meshes: List[ConstructionMesh], output_path: str):
     print("Creating GIF for 3D")
 
     vis = o3d.visualization.Visualizer()
     vis.create_window(visible=False)
     for mesh in meshes:
-        vis.add_geometry(mesh)
+        vis.add_geometry(mesh.mesh)
     duration = 10_000
     shot_step = 15
     shots_count = 2160 // shot_step
@@ -36,7 +38,7 @@ def save_as_gif(meshes: List[o3d.geometry.TriangleMesh], gif_file_name: str):
         images.append(Image.open(filename))
 
     images[0].save(
-        gif_file_name,
+        output_path,
         save_all=True,
         append_images=images[1:],
         duration=duration // shots_count,

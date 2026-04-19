@@ -5,7 +5,6 @@ import ifcopenshell.api
 import numpy as np
 
 from tqdm import tqdm
-from config import IFC_PATH
 from dto.enum.construction_type import ConstructionType
 from dto.mesh import ConstructionMesh
 
@@ -49,7 +48,7 @@ def add_element(model, body_context, mesh, element, colors, transparency=0.0):
     add_style(model, representation, colors, transparency)
 
 
-def meshes_to_bim(meshes: List[ConstructionMesh]):
+def save_meshes_as_bim_format(meshes: List[ConstructionMesh], output_path: str):
     model = ifcopenshell.file()
     project = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcProject", name="Project")
     ifcopenshell.api.context.add_context(model, context_type="Model")
@@ -160,4 +159,4 @@ def meshes_to_bim(meshes: List[ConstructionMesh]):
         relating_object=storey,
         products=walls + windows + doors + roofs
     )
-    model.write(IFC_PATH)
+    model.write(output_path)

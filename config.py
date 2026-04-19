@@ -4,6 +4,7 @@ SVG_PATH = "output_2d.svg"
 GIF_PATH = "output_3d.gif"
 OBJ_PATH = "output_3d.obj"
 IFC_PATH = "output_3d.ifc"
+GLTF_PATH = "output_3d.gltf"
 
 BLACK_COLOR_BORDER = 10
 MAX_PERCENTILE = 0.15

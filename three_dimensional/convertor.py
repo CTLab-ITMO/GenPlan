@@ -6,7 +6,7 @@ import trimesh
 
 from tqdm import tqdm
 from collections import deque
-from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH, IFC_PATH, ROOF_COLOR, BEAM_COLOR
+from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH, IFC_PATH, ROOF_COLOR, BEAM_COLOR, GLTF_PATH
 from dto.enum.construction_type import ConstructionType
 from dto.enum.position_type import PositionType
 from dto.mesh import ConstructionMesh, CylinderMesh, PolygonMesh, RectangleMesh, PointsMesh
@@ -19,8 +19,10 @@ from dto.enum.window_size_type import WindowSizeType
 from dto.roof.roof import Roof
 from metrics.endurance import calculate_endurance_wall
 from metrics.illumination import calculate_illumination
-from three_dimensional.bim_coverter import meshes_to_bim
-from three_dimensional.visualization import save_as_gif
+from three_dimensional.ifc_converter import save_meshes_as_bim_format
+from three_dimensional.gltf_converter import save_meshes_as_gltf_format
+from three_dimensional.obj_converter import save_meshes_as_obj_format
+from three_dimensional.gif_converter import save_meashes_as_gif
 
 # default params of door
 DEFAULT_DOOR_HEIGHT = 200.0
@@ -112,15 +114,6 @@ def find_outside_corner_points(width: int, height: int, rects: List[Rect]) -> Li
         if is_corner:
             corner_points.add(point)
     return list(corner_points)
-
-
-def combine_mashes(meshes: List[ConstructionMesh]) -> ConstructionMesh:
-    if len(meshes) == 0:
-        raise ValueError('Can\'t combine empty meshes.')
-    final_mesh = meshes[0].mesh
-    for i in range(0, len(meshes)):
-        final_mesh += meshes[i].mesh
-    return ConstructionMesh(final_mesh, ConstructionType.COMBINED)
 
 
 def create_wall_mesh(rect: Rect, wall_height: int, color: List[int]) -> ConstructionMesh:
@@ -540,11 +533,16 @@ def create_3d(
         endurance=calculate_endurance_wall(wall_height, walls, DEFAULT_BEAM_RADIUS)
     )
     if need_save:
-        meshes_to_bim(meshes)
-        print(f'3D BIM model saved in file {IFC_PATH}')
-        o3d.io.write_triangle_mesh(OBJ_PATH, combine_mashes(meshes).mesh)
+        save_meshes_as_bim_format(meshes, IFC_PATH)
+        print(f'3D BIM model (.ifc) saved in file {IFC_PATH}')
+
+        save_meshes_as_obj_format(meshes, OBJ_PATH)
         print(f'3D obj saved in file {OBJ_PATH}')
-        save_as_gif([m.mesh for m in meshes], gif_file_name=GIF_PATH)
+
+        save_meashes_as_gif(meshes, GIF_PATH)
         print(f'Gif saved in file {GIF_PATH}')
+
+        save_meshes_as_gltf_format(meshes, GLTF_PATH)
+        print(f'Gltf saved in file {GLTF_PATH}')
     if need_show:
         o3d.visualization.draw_geometries([m.mesh for m in meshes])

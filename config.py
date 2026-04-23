@@ -22,6 +22,6 @@ WALL_COLOR = [128, 128, 128]
 ROOF_COLOR = [69, 21, 13]
 BEAM_COLOR = [160, 95, 7]
 
-USE_WHITE_LOSS = True
-EDGING_TYPE = "rectangle"  # ["rectangle", "random_mask"]
 LOSS_SCALE = 200.0
+EDGING_TYPE = "rectangle"  # ["rectangle", "random_mask"]
+USE_WHITE_LOSS = True

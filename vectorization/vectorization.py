@@ -157,7 +157,8 @@ def main(
         min_thickness=MIN_THICKNESS,
         max_percentile=MAX_PERCENTILE,
         max_diff_value=MAX_VALUE,
-        result_type=Type.TWO_DIMENSIONAL.value
+        result_type=Type.TWO_DIMENSIONAL.value,
+        formats=None,
 ):
     image = cv2.imread(get_full_path(initial_png_path))
     width = len(image[0])
@@ -196,7 +197,8 @@ def main(
             rects=rects + doors_and_windows,
             description=description,
             width=width,
-            height=height
+            height=height,
+            formats=formats,
         )
     else:
         raise InputError('Unknown result type.')

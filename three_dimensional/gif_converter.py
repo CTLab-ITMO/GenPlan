@@ -8,7 +8,7 @@ from PIL import Image
 from dto.mesh import ConstructionMesh
 
 
-def save_meashes_as_gif(meshes: List[ConstructionMesh], output_path: str):
+def save_meashes_as_gif_format(meshes: List[ConstructionMesh], output_path: str):
     print("Creating GIF for 3D")
 
     vis = o3d.visualization.Visualizer()

@@ -6,8 +6,9 @@ import trimesh
 
 from tqdm import tqdm
 from collections import deque
-from config import GIF_PATH, WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, OBJ_PATH, IFC_PATH, ROOF_COLOR, BEAM_COLOR, GLTF_PATH
+from config import WALL_COLOR, DOOR_COLOR, WINDOW_COLOR, ROOF_COLOR, BEAM_COLOR
 from dto.enum.construction_type import ConstructionType
+from dto.enum.format_type import FormatType
 from dto.enum.position_type import PositionType
 from dto.mesh import ConstructionMesh, CylinderMesh, PolygonMesh, RectangleMesh, PointsMesh
 from dto.point import Point
@@ -23,7 +24,7 @@ from three_dimensional.classifier import classify_windows_and_walls
 from three_dimensional.ifc_converter import save_meshes_as_bim_format
 from three_dimensional.gltf_converter import save_meshes_as_gltf_format
 from three_dimensional.obj_converter import save_meshes_as_obj_format
-from three_dimensional.gif_converter import save_meashes_as_gif
+from three_dimensional.gif_converter import save_meashes_as_gif_format
 
 # default params of door
 DEFAULT_DOOR_HEIGHT = 200.0
@@ -444,14 +445,33 @@ def show_metrics(nlc: float, endurance: Dict[str, bool]):
         print(f"- {key} {checked_str}")
 
 
+def save_formats(formats: List[FormatType], meshes: List[ConstructionMesh]):
+    if formats is None:
+        return
+    for format_type in formats:
+        if format_type == FormatType.IFC:
+            save_meshes_as_bim_format(meshes, format_type.path)
+            print(f'3D ifc model saved in file {format_type.path}')
+        elif format_type == FormatType.OBJ:
+            save_meshes_as_obj_format(meshes, format_type.path)
+            print(f'3D obj model saved in file {format_type.path}')
+        elif format_type == FormatType.GIF:
+            save_meashes_as_gif_format(meshes, format_type.path)
+            print(f'3D gif model saved in file {format_type.path}')
+        elif format_type == FormatType.GLTF:
+            save_meshes_as_gltf_format(meshes, format_type.path)
+            print(f'3D gltf model saved in file {format_type.path}')
+        elif format_type == FormatType.SHOW:
+            o3d.visualization.draw_geometries([m.mesh for m in meshes])
+
+
 def create_3d(
         front_door_rect: Rect,
         rects: List[Rect],
         description: str,
         width: int,
         height: int,
-        need_save: bool = True,
-        need_show: bool = False
+        formats: List[FormatType],
 ):
     meshes: List[ConstructionMesh] = []
     windows: List[Rect] = []
@@ -533,17 +553,4 @@ def create_3d(
         nlc=calculate_illumination(outside_polygon, windows),
         endurance=calculate_endurance_wall(wall_height, walls, DEFAULT_BEAM_RADIUS)
     )
-    if need_save:
-        save_meshes_as_bim_format(meshes, IFC_PATH)
-        print(f'3D BIM model (.ifc) saved in file {IFC_PATH}')
-
-        save_meshes_as_obj_format(meshes, OBJ_PATH)
-        print(f'3D obj saved in file {OBJ_PATH}')
-
-        save_meashes_as_gif(meshes, GIF_PATH)
-        print(f'Gif saved in file {GIF_PATH}')
-
-        save_meshes_as_gltf_format(meshes, GLTF_PATH)
-        print(f'Gltf saved in file {GLTF_PATH}')
-    if need_show:
-        o3d.visualization.draw_geometries([m.mesh for m in meshes])
+    save_formats(formats, meshes)

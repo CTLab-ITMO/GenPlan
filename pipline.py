@@ -2,7 +2,7 @@ import argparse
 import generator.generator as generator
 import vectorization.vectorization as vectorization
 import preprocessor.preprocessor as preprocessor
-from config import SVG_PATH
+from dto.enum.format_type import FormatType
 from dto.input_params.gen_model_type import Type as GenType
 from dto.input_params.resultl_type import Type as ResultType
 
@@ -14,11 +14,6 @@ def main():
                         type=str,
                         default="plan"
                         )
-    parser.add_argument("--output_svg",
-                        help="Svg path to vector plan. If it doesn't exits, it will create.",
-                        type=str,
-                        default=SVG_PATH
-                        )
     parser.add_argument("--generation_model",
                         help="Name of generation model. SDXL with white loss by default.",
                         type=str,
@@ -29,6 +24,11 @@ def main():
                         type=str,
                         default=ResultType.TWO_DIMENSIONAL.value
                         )
+    parser.add_argument("--formats",
+                        help="Expected formats of 3D results.",
+                        type=str,
+                        default=None
+                        )
     args = parser.parse_args()
 
     print("Generating plan")
@@ -38,10 +38,17 @@ def main():
     preprocessor.main()
 
     print("Plan vectorization")
+    formats = args.__dict__["formats"]
+    if formats is not None:
+        parts = [p.strip() for p in formats.split(",")]
+        print(parts)
+        parts = [p for p in parts if p]
+        formats = [FormatType.parse(p) for p in parts]
+
     vectorization.main(
         description=args.__dict__["text"],
-        final_svg_path=args.__dict__["output_svg"],
-        result_type=args.__dict__["result_type"]
+        result_type=args.__dict__["result_type"],
+        formats=formats,
     )
     pass
 

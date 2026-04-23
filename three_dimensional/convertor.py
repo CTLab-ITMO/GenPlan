@@ -19,6 +19,7 @@ from dto.enum.window_size_type import WindowSizeType
 from dto.roof.roof import Roof
 from metrics.endurance import calculate_endurance_wall
 from metrics.illumination import calculate_illumination
+from three_dimensional.classifier import classify_windows_and_walls
 from three_dimensional.ifc_converter import save_meshes_as_bim_format
 from three_dimensional.gltf_converter import save_meshes_as_gltf_format
 from three_dimensional.obj_converter import save_meshes_as_obj_format
@@ -431,6 +432,7 @@ def get_door_type(front_door_rect: Rect, outside_polygon: Polygon) -> PositionTy
     elif bottom > 0:
         return PositionType.BOTTOM
 
+
 def show_metrics(nlc: float, endurance: Dict[str, bool]):
     print("Metrics of generated Plan :")
     print(f"- NLC (natural light coefficient) = {nlc:.2f}")
@@ -455,8 +457,7 @@ def create_3d(
     windows: List[Rect] = []
     walls: List[Rect] = []
 
-    # Todo: Add getting types by description
-    wall_type, window_type = WallSizeType.STANDARD, WindowSizeType.STANDARD
+    window_type, wall_type = classify_windows_and_walls(description)
 
     door_height = calculate_door_height(front_door_rect)
     wall_height = calculate_wall_height(door_height, wall_type)

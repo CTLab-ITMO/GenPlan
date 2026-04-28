@@ -3,6 +3,7 @@ import numpy as np
 
 from config import PNG_PATH, CLEAN_PNG_PATH, BLACK_COLOR_BORDER
 from utils import get_full_path
+from tqdm import tqdm
 
 
 def main(min_black_value=BLACK_COLOR_BORDER, initial_png_path=PNG_PATH, final_png_path=CLEAN_PNG_PATH):
@@ -16,7 +17,7 @@ def main(min_black_value=BLACK_COLOR_BORDER, initial_png_path=PNG_PATH, final_pn
 
     new_image = np.zeros((w, h))
 
-    for i in range(w):
+    for i in tqdm(range(w)):
         for j in range(h):
             if gray_image[i][j] >= min_black_value:
                 new_image[i][j] = 255

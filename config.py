@@ -1,10 +1,13 @@
-PNG_PATH = "input.png"
-CLEAN_PNG_PATH = "clean_input.png"
-SVG_PATH = "output_2d.svg"
-GIF_PATH = "output_3d.gif"
-OBJ_PATH = "output_3d.obj"
-IFC_PATH = "output_3d.ifc"
-GLTF_PATH = "output_3d.gltf"
+import os
+
+RESULTS_FOLDER = "results"
+PNG_PATH = os.path.join(RESULTS_FOLDER, "input.png")
+CLEAN_PNG_PATH = os.path.join(RESULTS_FOLDER, "clean_input.png")
+SVG_PATH = os.path.join(RESULTS_FOLDER, "output_2d.svg")
+GIF_PATH = os.path.join(RESULTS_FOLDER, "output_3d.gif")
+OBJ_PATH = os.path.join(RESULTS_FOLDER, "output_3d.obj")
+IFC_PATH = os.path.join(RESULTS_FOLDER, "output_3d.ifc")
+GLTF_PATH = os.path.join(RESULTS_FOLDER, "output_3d.gltf")
 
 BLACK_COLOR_BORDER = 10
 MAX_PERCENTILE = 0.15

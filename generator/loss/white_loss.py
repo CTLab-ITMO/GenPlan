@@ -1,5 +1,5 @@
 import torch
-from generator.loss.masks import rectangle_edging_mask, random_mask, circle_edging_mask
+from .masks import rectangle_edging_mask, random_mask, circle_edging_mask
 import config
 
 class WhiteLoss:

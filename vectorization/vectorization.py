@@ -157,7 +157,7 @@ def main(
         min_thickness=MIN_THICKNESS,
         max_percentile=MAX_PERCENTILE,
         max_diff_value=MAX_VALUE,
-        result_type=Type.TWO_DIMENSIONAL.value,
+        result_type=Type.TWO_DIMENSIONAL,
         formats=None,
 ):
     image = cv2.imread(get_full_path(initial_png_path))
@@ -183,14 +183,14 @@ def main(
     pic = draw.Drawing(width, height)
     rects = merge_similar_rects(merge_similar_rects(rects))
 
-    if result_type == Type.TWO_DIMENSIONAL.value:
+    if result_type == Type.TWO_DIMENSIONAL:
         doors_and_windows = create_windows_and_doors_2d(rects, width, height)
         for rect in rects:
             rect.to_svg(pic)
         for door_or_window in doors_and_windows:
             door_or_window.to_svg(pic)
         pic.save_svg(get_full_path(final_svg_path))
-    elif result_type == Type.THREE_DIMENSIONAL.value:
+    elif result_type == Type.THREE_DIMENSIONAL:
         front_door_rect, doors_and_windows = create_windows_and_doors_3d(rects)
         create_3d(
             front_door_rect=front_door_rect,

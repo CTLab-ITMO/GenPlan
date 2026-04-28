@@ -1,5 +1,5 @@
 import config
-from generator.loss.white_loss import WhiteLoss
+from .loss.white_loss import WhiteLoss
 
 import torch
 from torch import autocast

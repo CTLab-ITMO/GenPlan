@@ -544,6 +544,7 @@ def create_3d(
             meshes.append(window_frame_top)
         else:
             raise ValueError(f'Unknown type = {rect.rect_type}')
+    print("Adding fittings...")
     for mesh in tqdm(meshes):
         if mesh.construction_type == ConstructionType.WALL:
             fittings = create_fittings_for_wall_mesh(mesh, 40)

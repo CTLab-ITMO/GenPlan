@@ -18,7 +18,6 @@ class FormatType(Enum):
     @classmethod
     def parse(cls, s: str) -> "FormatType":
         t = s.strip().lower()
-        print(t)
         aliases = {
             "show": cls.SHOW,
             "svg": cls.SVG,

@@ -1,8 +1,3 @@
-/input.png
-/output_2d.svg
-/output_3d.gif
-/output_3d.gltf
-/output_3d.ifc
-/output_3d.obj
-/clean_input.png
+/results/
 /experiments/
+/fallback.png

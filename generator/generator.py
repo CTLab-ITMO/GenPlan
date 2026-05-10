@@ -3,16 +3,14 @@ import os
 import torch
 from PIL import Image
 from diffusers import FluxPipeline, AuraFlowPipeline, DiffusionPipeline, LMSDiscreteScheduler, AutoencoderKL, \
-    ControlNetModel
+    ControlNetModel, StableDiffusionPipeline
 from torch.utils.hipify.hipify_python import InputError
 
-from config import PNG_PATH
+from config import PNG_PATH, IMAGE_HEIGHT, IMAGE_WIDTH
 from dto.input_params.gen_model_type import Type
 from .sdxl import SDXL
 from utils import get_full_path
 
-IMAGE_WIDTH = 512
-IMAGE_HEIGHT = 512
 # Need to test algorithm without generation
 FALLBACK_IMAGE = "fallback.png"
 
@@ -59,6 +57,17 @@ def generate_without_control_net(prompt: str, model_type: Type):
             generator=torch.Generator().manual_seed(0),
             guidance_scale=3.5,
             controlnet_conditioning_scale=1.0,
+        ).images[0]
+    elif model_type == Type.SD:
+        pipeline = StableDiffusionPipeline.from_pretrained(
+            "stable-diffusion-v1-5/stable-diffusion-v1-5",
+            torch_dtype=torch.float16
+        ).to("cuda")
+
+        image = pipeline(
+            prompt,
+            height=IMAGE_HEIGHT,
+            width=IMAGE_WIDTH,
         ).images[0]
     elif model_type == Type.SDXL:
         pipe = DiffusionPipeline.from_pretrained(
@@ -123,6 +132,19 @@ def generate_with_control_net(prompt: str, model_type: Type, control_image_path:
             generator=torch.Generator().manual_seed(0),
             guidance_scale=3.5,
             controlnet_conditioning_scale=1.0,
+        ).images[0]
+    elif model_type == Type.SD:
+        pipeline = StableDiffusionPipeline.from_pretrained(
+            "stable-diffusion-v1-5/stable-diffusion-v1-5",
+            controlnet=controlnet,
+            torch_dtype=torch.float16
+        ).to("cuda")
+
+        image = pipeline(
+            prompt,
+            image=control_image,
+            height=IMAGE_HEIGHT,
+            width=IMAGE_WIDTH,
         ).images[0]
     elif model_type == Type.SDXL:
         pipe = DiffusionPipeline.from_pretrained(

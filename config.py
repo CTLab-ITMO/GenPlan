@@ -3,6 +3,7 @@ import os
 RESULTS_FOLDER = "results"
 PNG_PATH = os.path.join(RESULTS_FOLDER, "input.png")
 CLEAN_PNG_PATH = os.path.join(RESULTS_FOLDER, "clean_input.png")
+CONTROL_PNG_PATH = os.path.join(RESULTS_FOLDER, "control_input.png")
 SVG_PATH = os.path.join(RESULTS_FOLDER, "output_2d.svg")
 GIF_PATH = os.path.join(RESULTS_FOLDER, "output_3d.gif")
 OBJ_PATH = os.path.join(RESULTS_FOLDER, "output_3d.obj")
@@ -14,6 +15,9 @@ MAX_PERCENTILE = 0.15
 MAX_VALUE = 2000
 MIN_THICKNESS = 3
 MAX_DEVIATION = 2
+IMAGE_WIDTH = 512
+IMAGE_HEIGHT = 512
+IMAGE_SHIFT = 150
 
 # config for 2d
 DOOR_WIDTH = 5

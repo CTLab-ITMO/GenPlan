@@ -5,6 +5,7 @@ class Type(Enum):
     FLUX = "Flux"
     AURA_FLOW = "AuraFlow"
     SDXL = "SDXL"
+    SD = "SD"
     FALLBACK = "Fallback"
 
     @classmethod
@@ -14,6 +15,7 @@ class Type(Enum):
             "flux": cls.FLUX,
             "auraflow": cls.AURA_FLOW,
             "sdxl": cls.SDXL,
+            "sd": cls.SD,
             "fallback": cls.FALLBACK,
         }
 

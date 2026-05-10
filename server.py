@@ -28,17 +28,17 @@ async def list_tools():
                     "args": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Command line arguments passed to the container",
+                        "description": "Command line arguments passed to the container. Examples of args in README.md file.",
                         "default": [],
                     },
                     "image": {
                         "type": "string",
-                        "description": "Docker image",
+                        "description": "Docker image.",
                         "default": "egor0ba/gen-plan-api:latest",
                     },
                     "result_folder": {
                         "type": "string",
-                        "description": "Result folder",
+                        "description": "Result folder.",
                         "default": f"{current_dir}/results",
                     },
                 },

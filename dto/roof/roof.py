@@ -369,10 +369,13 @@ class Roof:
         x2, y2 = self.rect.end_point.x, self.rect.end_point.y
         rt = self.roof_thickness
         ind = self.indent
+        bw = self.beam_width * math.sin(math.radians(self.angle))
+        shift = int(bw + ind)
         return self._create_angle_block_for_two_slopes(
-            (x1 - ind, y1 - ind),
-            (x2 + ind, y2 + ind),
-            rt, self.beam_width
+            (x1 - shift, y1 - shift),
+            (x2 + shift, y2 + shift),
+            rt,
+            self.beam_width
         )
 
     def _create_roof_for_one_slope(
@@ -789,7 +792,8 @@ class Roof:
             left_part_2, right_part_2 = self._create_roof_for_two_slopes(
                 (x1, y1),
                 (x2, y2),
-                0, 0
+                shift_height,
+                shift_height
             )
             block = [left_part_1 + left_part_2] + [right_part_1 + right_part_2]
         elif self.door_position_type in [PositionType.LEFT, PositionType.RIGHT]:
@@ -801,7 +805,8 @@ class Roof:
             left_part_2, right_part_2 = self._create_roof_for_two_slopes(
                 (x1, y1),
                 (x2, y2),
-                0, 0
+                shift_height,
+                shift_height
             )
             block = [left_part_1 + left_part_2] + [right_part_1 + right_part_2]
         return block

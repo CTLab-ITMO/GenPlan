@@ -18,7 +18,7 @@ based on a text description.
 
 1. ``git clone https://github.com/CTLab-ITMO/GenPlan``
 2. ``pip install requirements.txt``
-3. ``python pipline.py --text "your text promt" --generation_model "model_name"  --result_type "2d/3d"  --formats "gif, gltf, ifc, obj --control_image_coordinates "list of coordinates pairs"``
+3. ``python pipeline.py --text "your text promt" --generation_model "model_name"  --result_type "2d/3d"  --formats "gif, gltf, ifc, obj --control_image_coordinates "list of coordinates pairs"``
 
 ## Setting parameters
 

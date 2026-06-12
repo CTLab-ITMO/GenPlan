@@ -103,6 +103,8 @@ def save_meshes_as_bim_format(meshes: List[ConstructionMesh], output_path: str):
     windows = []
     doors = []
     roofs = []
+    armatures = []
+    beams = []
 
     print(f'Convert {len(meshes)} meshed to IFC objects')
 
@@ -111,8 +113,6 @@ def save_meshes_as_bim_format(meshes: List[ConstructionMesh], output_path: str):
         if (mesh.construction_type == ConstructionType.WALL
                 or mesh.construction_type == ConstructionType.CEILING
                 or mesh.construction_type == ConstructionType.FLOOR
-                or mesh.construction_type == ConstructionType.FITTINGS
-                or mesh.construction_type == ConstructionType.BEAM
         ):
             name = str(mesh.construction_type)
             wall = ifcopenshell.api.root.create_entity(
@@ -123,8 +123,25 @@ def save_meshes_as_bim_format(meshes: List[ConstructionMesh], output_path: str):
             )
             walls.append(wall)
             add_element(model, body_context, mesh, wall, mesh_colors)
+        elif mesh.construction_type == ConstructionType.FITTINGS:
+            armature = ifcopenshell.api.root.create_entity(
+                model,
+                ifc_class="IfcReinforcingBar",
+                name="Armature",
+                predefined_type="STRAIGHT"
+            )
+            armatures.append(armature)
+            add_element(model, body_context, mesh, armature, mesh_colors)
+        elif mesh.construction_type == ConstructionType.BEAM:
+            beam = ifcopenshell.api.root.create_entity(
+                model,
+                ifc_class="IfcBeam",
+                name="Beam",
+                predefined_type="STRAIGHT"
+            )
+            beams.append(beam)
+            add_element(model, body_context, mesh, beam, mesh_colors)
         elif mesh.construction_type == ConstructionType.WINDOW:
-            pass
             window = ifcopenshell.api.root.create_entity(
                 model,
                 ifc_class="IfcWindow",
@@ -157,6 +174,6 @@ def save_meshes_as_bim_format(meshes: List[ConstructionMesh], output_path: str):
     ifcopenshell.api.aggregate.assign_object(
         model,
         relating_object=storey,
-        products=walls + windows + doors + roofs
+        products=walls + windows + doors + roofs + armatures + beams
     )
     model.write(output_path)

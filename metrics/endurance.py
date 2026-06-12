@@ -62,7 +62,7 @@ def calculate_endurance(
     wall_endurance_max = concrete_resistance * phi
 
     # Bend
-    wall_moment = (width * height ** 2) / 6  # Момент сопротивления бетона
+    wall_moment = (width * height * thickness) / 6  # Момент сопротивления бетона
     beam_moment = (beam_square * height) / 6  # Момент сопротивления арматуры
     construction_moment = concrete_resistance * wall_moment + beam_resistance * beam_moment
     construction_moment_min = bending_moment
